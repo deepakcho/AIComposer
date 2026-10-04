@@ -1,0 +1,56 @@
+{
+  "name": "plugin-command",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "plugins/command/src",
+  "projectType": "library",
+  "tags": [
+    "scope:plugin",
+    "type:lib"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "plugins/command/dist",
+        "main": "plugins/command/src/index.ts",
+        "tsConfig": "plugins/command/tsconfig.lib.json",
+        "rootDir": "plugins/command/src",
+        "assets": [
+          {
+            "input": "../plugins/command",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project plugin-command"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "plugins/command/**/*.ts",
+          "plugins/command/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p plugins/command/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

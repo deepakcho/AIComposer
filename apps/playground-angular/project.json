@@ -1,0 +1,18 @@
+{
+  "name": "playground-angular",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/playground-angular/src",
+  "projectType": "application",
+  "tags": ["scope:app", "type:app", "framework:angular"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite --port 4204", "cwd": "apps/playground-angular" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite build", "cwd": "apps/playground-angular" },
+      "outputs": ["{projectRoot}/dist"]
+    }
+  }
+}

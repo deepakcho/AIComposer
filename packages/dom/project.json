@@ -1,0 +1,56 @@
+{
+  "name": "dom",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dom/src",
+  "projectType": "library",
+  "tags": [
+    "scope:dom",
+    "type:lib"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/dom/dist",
+        "main": "packages/dom/src/index.ts",
+        "tsConfig": "packages/dom/tsconfig.lib.json",
+        "rootDir": "packages/dom/src",
+        "assets": [
+          {
+            "input": "../packages/dom",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project dom"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/dom/**/*.ts",
+          "packages/dom/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/dom/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

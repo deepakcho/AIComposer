@@ -1,0 +1,22 @@
+{
+  "name": "playground-vanilla",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/playground-vanilla/src",
+  "projectType": "application",
+  "tags": ["scope:app", "type:app"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite --port 4201", "cwd": "apps/playground-vanilla" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite build", "cwd": "apps/playground-vanilla" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite preview", "cwd": "apps/playground-vanilla" }
+    }
+  }
+}

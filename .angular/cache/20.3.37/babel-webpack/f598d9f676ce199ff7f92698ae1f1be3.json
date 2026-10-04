@@ -1,0 +1,1 @@
+{"ast":null,"code":"/** Escape a string for safe interpolation into HTML text/attribute contexts. */\nexport function escapeHtml(value) {\n  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n}","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

@@ -1,0 +1,74 @@
+{
+  "name": "react",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/react/src",
+  "projectType": "library",
+  "tags": [
+    "scope:adapter",
+    "type:lib",
+    "framework:react"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/react/dist",
+        "main": "packages/react/src/index.ts",
+        "tsConfig": "packages/react/tsconfig.lib.json",
+        "rootDir": "packages/react/src",
+        "assets": [
+          {
+            "input": "../packages/react",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project react"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/react/**/*.ts",
+          "packages/react/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/react/tsconfig.spec.json --noEmit"
+      }
+    },
+    "storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook dev --port 6006 --no-open -c .storybook",
+        "cwd": "packages/react"
+      }
+    },
+    "build-storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/react --test",
+        "cwd": "packages/react"
+      },
+      "outputs": [
+        "{workspaceRoot}/dist/storybook/react"
+      ]
+    }
+  }
+}

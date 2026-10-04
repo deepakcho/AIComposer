@@ -1,0 +1,39 @@
+main {
+  max-width: 760px;
+  margin: 40px auto;
+  padding: 0 16px;
+  font-family: system-ui, sans-serif;
+}
+
+nav {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  flex-wrap: wrap;
+}
+
+nav button {
+  border: 1px solid #d9d9de;
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+nav button.active {
+  border-color: #6366f1;
+  color: #4338ca;
+  font-weight: 600;
+}
+
+.output {
+  background: #f6f7f9;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  overflow: auto;
+}
+
+.aic-toolbar .primary {
+  background: #16a34a;
+}

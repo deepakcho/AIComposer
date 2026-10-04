@@ -1,0 +1,1 @@
+{"ast":null,"code":"export { createSerializerRegistry } from './registry';\nexport { createAiSerializer, createDefaultSerializers, createHtmlSerializer, createJsonSerializer, createMarkdownSerializer, createTextSerializer, documentToText, nodeToText } from './builtins';","map":null,"metadata":{},"sourceType":"module","externalDependencies":[]}

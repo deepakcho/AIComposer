@@ -1,0 +1,40 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@ai-composer/core": ["packages/core/src/index.ts"],
+      "@ai-composer/dom": ["packages/dom/src/index.ts"],
+      "@ai-composer/react": ["packages/react/src/index.ts"],
+      "@ai-composer/angular": ["packages/angular/src/index.ts"],
+      "@ai-composer/vue": ["packages/vue/src/index.ts"],
+      "@ai-composer/web-component": ["packages/web-component/src/index.ts"],
+      "@ai-composer/ui": ["packages/ui/src/index.ts"],
+      "@ai-composer/themes": ["packages/themes/src/index.ts"],
+      "@ai-composer/testing": ["packages/testing/src/index.ts"],
+      "@ai-composer/plugin-mention": ["plugins/mention/src/index.ts"],
+      "@ai-composer/plugin-command": ["plugins/command/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp", "dist"]
+}

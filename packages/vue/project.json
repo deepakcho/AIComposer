@@ -1,0 +1,74 @@
+{
+  "name": "vue",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vue/src",
+  "projectType": "library",
+  "tags": [
+    "scope:adapter",
+    "type:lib",
+    "framework:vue"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/vue/dist",
+        "main": "packages/vue/src/index.ts",
+        "tsConfig": "packages/vue/tsconfig.lib.json",
+        "rootDir": "packages/vue/src",
+        "assets": [
+          {
+            "input": "../packages/vue",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project vue"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/vue/**/*.ts",
+          "packages/vue/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/vue/tsconfig.spec.json --noEmit"
+      }
+    },
+    "storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook dev --port 6007 --no-open -c .storybook",
+        "cwd": "packages/vue"
+      }
+    },
+    "build-storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/vue --test",
+        "cwd": "packages/vue"
+      },
+      "outputs": [
+        "{workspaceRoot}/dist/storybook/vue"
+      ]
+    }
+  }
+}

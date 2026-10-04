@@ -1,0 +1,23 @@
+/* Dark theme — override tokens only; structure comes from default.css.
+   Usage: import tokens.css, default.css, then dark.css. */
+
+.aic-root,
+.aic-root[data-aic-theme='dark'],
+[data-aic-theme='dark'] .aic-root {
+  --aic-background: #16181d;
+  --aic-surface-raised: #1f232b;
+  --aic-border: #333842;
+  --aic-border-focus: #818cf8;
+
+  --aic-text: #e6e8eb;
+  --aic-text-muted: #9aa1ac;
+  --aic-text-placeholder: #6b7280;
+
+  --aic-accent: #818cf8;
+  --aic-accent-contrast: #111318;
+  --aic-chip-background: #262a4a;
+  --aic-chip-text: #c7d2fe;
+
+  --aic-shadow: 0 4px 16px rgb(0 0 0 / 50%);
+  --aic-focus-ring: 0 0 0 2px rgb(129 140 248 / 45%);
+}

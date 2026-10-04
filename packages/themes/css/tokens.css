@@ -1,0 +1,48 @@
+/**
+ * Design tokens — the only styling contract. Every visual default flows from
+ * CSS custom properties; no hard-coded colors or dimensions in core/dom
+ * (ADR-0007). Applications override any token, any theme can replace any
+ * layer:
+ *
+ *   core tokens → default theme → mode theme → app theme → component overrides
+ */
+
+:root {
+  /* surface */
+  --aic-background: #ffffff;
+  --aic-surface-raised: #f7f7f8;
+  --aic-border: #d9d9de;
+  --aic-border-focus: #6366f1;
+
+  /* text */
+  --aic-text: #1f2328;
+  --aic-text-muted: #6b7280;
+  --aic-text-placeholder: #9ca3af;
+
+  /* accent */
+  --aic-accent: #6366f1;
+  --aic-accent-contrast: #ffffff;
+  --aic-chip-background: #eef2ff;
+  --aic-chip-text: #4338ca;
+
+  /* geometry */
+  --aic-radius: 12px;
+  --aic-radius-sm: 8px;
+  --aic-border-width: 1px;
+  --aic-input-padding: 12px;
+  --aic-input-min-height: 44px;
+  --aic-input-max-height: 40vh;
+  --aic-toolbar-height: 40px;
+  --aic-font-size: 15px;
+  --aic-font-family: inherit;
+
+  /* effects */
+  --aic-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+  --aic-focus-ring: 0 0 0 2px rgb(99 102 241 / 35%);
+
+  /* motion */
+  --aic-transition: 120ms ease;
+
+  /* z-index scale */
+  --aic-z-suggestions: 30;
+}

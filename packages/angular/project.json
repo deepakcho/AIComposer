@@ -1,0 +1,58 @@
+{
+  "name": "angular",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/angular/src",
+  "projectType": "library",
+  "tags": [
+    "scope:adapter",
+    "type:lib",
+    "framework:angular"
+  ],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/angular/tsconfig.lib.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project angular --passWithNoTests"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/angular/**/*.ts",
+          "packages/angular/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/angular/tsconfig.spec.json --noEmit"
+      }
+    },
+    "storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec ng run angular:storybook"
+      }
+    },
+    "build-storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec ng run angular:build-storybook"
+      },
+      "outputs": [
+        "{workspaceRoot}/dist/storybook/angular"
+      ]
+    }
+  }
+}

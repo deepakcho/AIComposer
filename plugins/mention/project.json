@@ -1,0 +1,56 @@
+{
+  "name": "plugin-mention",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "plugins/mention/src",
+  "projectType": "library",
+  "tags": [
+    "scope:plugin",
+    "type:lib"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "plugins/mention/dist",
+        "main": "plugins/mention/src/index.ts",
+        "tsConfig": "plugins/mention/tsconfig.lib.json",
+        "rootDir": "plugins/mention/src",
+        "assets": [
+          {
+            "input": "../plugins/mention",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project plugin-mention"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "plugins/mention/**/*.ts",
+          "plugins/mention/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p plugins/mention/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

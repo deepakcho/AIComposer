@@ -1,0 +1,56 @@
+{
+  "name": "testing",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/testing/src",
+  "projectType": "library",
+  "tags": [
+    "scope:testing",
+    "type:lib"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/testing/dist",
+        "main": "packages/testing/src/index.ts",
+        "tsConfig": "packages/testing/tsconfig.lib.json",
+        "rootDir": "packages/testing/src",
+        "assets": [
+          {
+            "input": "../packages/testing",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project testing"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/testing/**/*.ts",
+          "packages/testing/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/testing/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

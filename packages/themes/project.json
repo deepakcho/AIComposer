@@ -1,0 +1,61 @@
+{
+  "name": "themes",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/themes/src",
+  "projectType": "library",
+  "tags": [
+    "scope:adapter",
+    "type:lib"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/themes/dist",
+        "main": "packages/themes/src/index.ts",
+        "tsConfig": "packages/themes/tsconfig.lib.json",
+        "rootDir": "packages/themes/src",
+        "assets": [
+          {
+            "input": "../packages/themes",
+            "glob": "*.md",
+            "output": "."
+          },
+          {
+            "input": "packages/themes/css",
+            "glob": "**/*",
+            "output": "./css"
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project themes --passWithNoTests"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/themes/**/*.ts",
+          "packages/themes/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/themes/tsconfig.spec.json --noEmit"
+      }
+    }
+  }
+}

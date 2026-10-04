@@ -1,0 +1,73 @@
+{
+  "name": "web-component",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/web-component/src",
+  "projectType": "library",
+  "tags": [
+    "scope:adapter",
+    "type:lib"
+  ],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "packages/web-component/dist",
+        "main": "packages/web-component/src/index.ts",
+        "tsConfig": "packages/web-component/tsconfig.lib.json",
+        "rootDir": "packages/web-component/src",
+        "assets": [
+          {
+            "input": "../packages/web-component",
+            "glob": "*.md",
+            "output": "."
+          }
+        ],
+        "generateExportsIfAbsent": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run --project web-component"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": [
+        "{options.outputFile}"
+      ],
+      "options": {
+        "lintFilePatterns": [
+          "packages/web-component/**/*.ts",
+          "packages/web-component/**/*.tsx"
+        ]
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p packages/web-component/tsconfig.spec.json --noEmit"
+      }
+    },
+    "storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook dev --port 6009 --no-open -c .storybook",
+        "cwd": "packages/web-component"
+      }
+    },
+    "build-storybook": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/web-component --test",
+        "cwd": "packages/web-component"
+      },
+      "outputs": [
+        "{workspaceRoot}/dist/storybook/web-component"
+      ]
+    }
+  }
+}

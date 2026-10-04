@@ -1,0 +1,27 @@
+main {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 0 16px;
+  font-family: system-ui, sans-serif;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: #555;
+}
+
+#output {
+  background: #f6f7f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  overflow: auto;
+}
+
+[data-aic-theme='dark'] body {
+  background: #0d0e12;
+  color: #e6e8eb;
+}

@@ -1,0 +1,10 @@
+/* Compact theme — denser geometry for embedded/search contexts. */
+
+.aic-root[data-aic-theme='compact'],
+[data-aic-theme='compact'] .aic-root {
+  --aic-radius: 8px;
+  --aic-input-padding: 8px 10px;
+  --aic-input-min-height: 34px;
+  --aic-toolbar-height: 32px;
+  --aic-font-size: 14px;
+}

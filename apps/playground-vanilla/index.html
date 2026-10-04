@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Composer — Vanilla Playground</title>
+  </head>
+  <body>
+    <main>
+      <h1>AI Composer · Vanilla JS</h1>
+      <p class="controls">
+        Mode:
+        <select id="mode">
+          <option value="compact">compact</option>
+          <option value="chat" selected>chat</option>
+          <option value="expanded">expanded</option>
+        </select>
+        Theme:
+        <select id="theme">
+          <option value="">default</option>
+          <option value="dark">dark</option>
+        </select>
+      </p>
+      <div id="composer"></div>
+      <h2>Live output</h2>
+      <pre id="output">—</pre>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
