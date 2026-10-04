@@ -17,8 +17,10 @@ import { mountPromptEditor } from '@ai-composer/dom';
 
 const editor = createPromptEditor({ mode: 'chat', plugins: [...] });
 const mounted = mountPromptEditor(document.querySelector('#composer'), editor, {
-  mode: 'chat',                    // optional override
+  mode: 'chat',                    // optional override (live: editor.setMode() later)
   template: undefined,             // optional PromptDomTemplate override
+  showSlots: ['toolbar', 'footer'], // force slots on beyond the mode preset
+  maxHeight: '160px',              // auto-height ceiling; scrolls after the cap
   renderSuggestionItem: (item, active) => { const li = document.createElement('li'); /* … */ return li; },
   labels: { submit: 'Send', undo: 'Undo', redo: 'Redo', removeAttachment: 'Remove' },
 });
@@ -59,9 +61,16 @@ import { createSuggestionList } from '@ai-composer/dom';
 const list = createSuggestionList(editor, optionalUlElement, {
   renderItem: (item, active) => li,
   inputHost,   // receives aria-controls/activedescendant/expanded
+  placement: 'above',  // preferred side; flips to fit the viewport
 });
 list.destroy();
 ```
+
+The menu is a true popup: it opens at the **caret** (where the trigger key was
+hit), clamps horizontally into the viewport, flips above/below based on
+available space, caps its height to that space and repositions on scroll and
+resize. Custom renderers can reuse the same behavior with
+`attachCaretAnchoredPopup(popup, host, { placement })`.
 
 ## Parse/render utilities
 

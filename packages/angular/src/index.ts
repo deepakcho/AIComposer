@@ -15,15 +15,18 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  ContentChild,
   Directive,
   ElementRef,
   EventEmitter,
   Inject,
   Injectable,
   Input,
+  OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  SimpleChanges,
   Signal,
   computed,
   inject,
@@ -66,6 +69,22 @@ export function injectPromptState(): Signal<PromptEditorState | null> {
 }
 
 // ---------------------------------------------------------------------------
+// Slot marker directives (content projection anchors)
+// ---------------------------------------------------------------------------
+
+@Directive({ selector: '[aic-header]', standalone: true })
+export class PromptHeaderDirective {}
+
+@Directive({ selector: '[aic-toolbar]', standalone: true })
+export class PromptToolbarDirective {}
+
+@Directive({ selector: '[aic-footer]', standalone: true })
+export class PromptFooterDirective {}
+
+@Directive({ selector: '[aic-attachments]', standalone: true })
+export class PromptAttachmentsDirective {}
+
+// ---------------------------------------------------------------------------
 // Root component
 // ---------------------------------------------------------------------------
 
@@ -81,14 +100,26 @@ export function injectPromptState(): Signal<PromptEditorState | null> {
     <ng-content select="[aic-header]" />
     <div class="aic-body" data-aic-slot="body">
       <ng-content select="[aic-attachments]" />
-      <aic-prompt-input />
+      <div class="aic-input-wrap">
+        <aic-prompt-input />
+      </div>
     </div>
     <ng-content select="[aic-toolbar]" />
+    @if (showDefaultToolbar()) {
+      <div class="aic-toolbar" data-aic-slot="toolbar">
+        <aic-submit-button />
+      </div>
+    }
     <ng-content select="[aic-footer]" />
   `,
-  host: { class: 'aic-root', '[attr.data-aic-mode]': 'state()?.mode ?? mode' },
+  host: {
+    class: 'aic-root',
+    '[attr.data-aic-mode]': 'state()?.mode ?? mode',
+    '[style.--aic-input-max-height]':
+      "maxHeight === '' ? null : (typeof maxHeight === 'number' ? maxHeight + 'px' : maxHeight)",
+  },
 })
-export class PromptEditorComponent implements OnInit, OnDestroy, ControlValueAccessor {
+export class PromptEditorComponent implements OnInit, OnChanges, OnDestroy, ControlValueAccessor {
   /** External editor; when omitted one is created from `options`. */
   @Input() editor: PromptEditor | null = null;
   @Input() options: PromptEditorOptions | null = null;
@@ -96,11 +127,24 @@ export class PromptEditorComponent implements OnInit, OnDestroy, ControlValueAcc
   @Input() placeholder = '';
   @Input({ transform: BooleanAttribute }) disabled = false;
   @Input({ transform: BooleanAttribute }) readonly = false;
+  /** Auto-height ceiling — px number or CSS length; scrolls after the cap. */
+  @Input() maxHeight: number | string = '';
 
   @Output() valueChange = new EventEmitter<PromptDocument>();
   @Output() submitted = new EventEmitter<PromptDocument>();
 
+  /** Custom toolbar projection (suppresses the default one). */
+  @ContentChild(PromptToolbarDirective)
+  customToolbar: PromptToolbarDirective | null = null;
+
   readonly state = signal<PromptEditorState | null>(null);
+
+  /** Default circular send button for chat/expanded (Copilot style). */
+  readonly showDefaultToolbar = computed(() => {
+    const current = this.state();
+    const mode = current?.mode ?? this.mode;
+    return mode !== 'compact' && !this.customToolbar;
+  });
 
   private created = false;
   private resolved: PromptEditor | null = null;
@@ -111,6 +155,16 @@ export class PromptEditorComponent implements OnInit, OnDestroy, ControlValueAcc
   private get editorInstance(): PromptEditor {
     if (!this.resolved) throw new Error('Editor not initialized');
     return this.resolved;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.resolved) return;
+    const patch: Partial<PromptEditorOptions> = {};
+    if (changes['mode']?.currentValue) patch.mode = changes['mode'].currentValue;
+    if (changes['placeholder']) patch.placeholder = changes['placeholder'].currentValue;
+    if (changes['disabled']) patch.disabled = changes['disabled'].currentValue;
+    if (changes['readonly']) patch.readonly = changes['readonly'].currentValue;
+    if (Object.keys(patch).length > 0) this.editorInstance.configure(patch);
   }
 
   ngOnInit(): void {
@@ -192,9 +246,7 @@ export class PromptInputComponent implements AfterViewInit, OnDestroy {
     const editor = this.holder?.editor;
     if (!editor) return;
     const host = this.elementRef.nativeElement;
-    this.surface = createEditableSurface(editor, host, {
-      multiline: editor.getState().mode !== 'compact',
-    });
+    this.surface = createEditableSurface(editor, host);
     this.list = createSuggestionList(editor, undefined, { inputHost: host });
     if (host.parentElement) host.parentElement.appendChild(this.list.element);
   }
@@ -219,6 +271,7 @@ export class PromptInputComponent implements AfterViewInit, OnDestroy {
     type="button"
     class="aic-toolbar-submit"
     data-aic-action="submit"
+    aria-label="Send"
     [disabled]="!canSubmit()"
     (click)="submit()"
   >{{ label() }}</button>`,
@@ -226,7 +279,7 @@ export class PromptInputComponent implements AfterViewInit, OnDestroy {
 export class SubmitButtonComponent {
   private readonly editor = injectPromptEditor();
   private readonly state = injectPromptState();
-  readonly label = computed(() => (this.state()?.submitting ? '…' : 'Send'));
+  readonly label = computed(() => (this.state()?.submitting ? '…' : '↑'));
   readonly canSubmit = computed(() => {
     const state = this.state();
     if (!state) return false;
@@ -237,22 +290,6 @@ export class SubmitButtonComponent {
     void this.editor.submit();
   }
 }
-
-// ---------------------------------------------------------------------------
-// Slot marker directives (content projection anchors)
-// ---------------------------------------------------------------------------
-
-@Directive({ selector: '[aic-header]', standalone: true })
-export class PromptHeaderDirective {}
-
-@Directive({ selector: '[aic-toolbar]', standalone: true })
-export class PromptToolbarDirective {}
-
-@Directive({ selector: '[aic-footer]', standalone: true })
-export class PromptFooterDirective {}
-
-@Directive({ selector: '[aic-attachments]', standalone: true })
-export class PromptAttachmentsDirective {}
 
 /** Convenience import collection. */
 export const AI_COMPOSER_IMPORTS = [

@@ -1,7 +1,8 @@
 /**
  * Vanilla JS mount — proves the stack works with zero framework. Builds the
- * default DOM for a mode template, wires toolbar/attachments/suggestions and
- * the editable surface.
+ * DOM once (every slot exists), then applies the mode's structural preset and
+ * re-applies it live when the editor's mode changes — the draft, focus and
+ * undo history survive a compact ↔ chat ↔ expanded switch.
  */
 
 import type { PromptEditor, SuggestionItem, Unsubscribe } from '@ai-composer/core';
@@ -10,9 +11,21 @@ import { createSuggestionList } from './suggestions';
 import { templateForMode, SLOT_ATTRIBUTE, type PromptDomTemplate } from './template';
 
 export interface MountOptions {
+  /** Initial mode preset; can be changed later via `editor.setMode()`. */
   mode?: string;
-  /** Replace the structural preset. */
+  /** Replace the structural preset (static — not mode-switched). */
   template?: PromptDomTemplate;
+  /**
+   * Force slots on regardless of the mode preset (projection-friendly):
+   * attachments/header/toolbar/footer stay mountable in compact too.
+   */
+  showSlots?: Array<'header' | 'attachments' | 'toolbar' | 'footer'>;
+  /**
+   * Auto-height ceiling — any CSS length ("160px", "40vh"). The box grows
+   * with content up to this height, then scrolls inside.
+   * Equivalent to the `--aic-input-max-height` token.
+   */
+  maxHeight?: string;
   /** Custom suggestion item renderer. */
   renderSuggestionItem?: (item: SuggestionItem, active: boolean) => HTMLElement;
   labels?: { submit?: string; undo?: string; redo?: string; removeAttachment?: string };
@@ -32,131 +45,152 @@ export function mountPromptEditor(
   editor: PromptEditor,
   options: MountOptions = {},
 ): MountedEditor {
-  const mode = options.mode ?? editor.getState().mode;
-  const template = options.template ?? templateForMode(mode);
   const labels = {
-    submit: options.labels?.submit ?? 'Send',
-    undo: options.labels?.undo ?? 'Undo',
-    redo: options.labels?.redo ?? 'Redo',
+    submit: options.labels?.submit ?? '↑',
+    undo: options.labels?.undo ?? '↺',
+    redo: options.labels?.redo ?? '↻',
     removeAttachment: options.labels?.removeAttachment ?? 'Remove',
   };
 
   const slots: Record<string, HTMLElement> = {};
   const disposables: Unsubscribe[] = [];
 
-  const has = (name: string): boolean => template.slots.includes(name as never);
-
-  const slot = (name: string, className: string, tag = 'div'): HTMLElement => {
-    const element = document.createElement(tag);
+  const makeSlot = (name: string, className: string): HTMLElement => {
+    const element = document.createElement('div');
     element.className = className;
     element.setAttribute(SLOT_ATTRIBUTE, name);
     slots[name] = element;
     return element;
   };
 
-  // Only create slots the template asks for.
-  const header = has('header') ? slot('header', 'aic-header') : null;
-  const body = has('body') ? slot('body', 'aic-body') : null;
-  const attachments = has('attachments') ? slot('attachments', 'aic-attachments') : null;
-  const input = slot('input', 'aic-input-host');
-  const toolbar = has('toolbar') ? slot('toolbar', 'aic-toolbar') : null;
-  const footer = has('footer') ? slot('footer', 'aic-footer') : null;
-
   const root = container;
   root.classList.add('aic-root');
-  root.setAttribute('data-aic-mode', template.name);
+  if (options.maxHeight) {
+    root.style.setProperty('--aic-input-max-height', options.maxHeight);
+  }
 
-  if (header) root.appendChild(header);
-  if (body) root.appendChild(body);
-  if (toolbar) root.appendChild(toolbar);
-  if (footer) root.appendChild(footer);
+  const header = makeSlot('header', 'aic-header');
+  const body = makeSlot('body', 'aic-body');
+  const toolbar = makeSlot('toolbar', 'aic-toolbar');
+  const footer = makeSlot('footer', 'aic-footer');
+  const attachments = makeSlot('attachments', 'aic-attachments');
+  const input = makeSlot('input', 'aic-input-host');
 
-  const bodyParent = body ?? root;
-  if (attachments) bodyParent.appendChild(attachments);
-  bodyParent.appendChild(input);
-  // suggestions anchor needs relative positioning for the absolute list
-  const suggestionsAnchor = (() => {
-    if (!has('suggestions')) return bodyParent;
-    const anchor = document.createElement('div');
-    anchor.className = 'aic-suggestions-anchor';
-    anchor.style.position = 'relative';
-    anchor.setAttribute(SLOT_ATTRIBUTE, 'suggestions');
-    slots.suggestions = anchor;
-    bodyParent.appendChild(anchor);
-    return anchor;
-  })();
+  root.append(header, body, toolbar, footer);
 
-  // Editable surface + suggestion list
-  const surface = createEditableSurface(editor, input, {
-    multiline: template.multiline,
-    id: input.id || undefined,
-  });
+  // The input wrapper is the popup anchor: it occupies exactly the input's
+  // space — the suggestion list floats out of it (no DOM-space reservation).
+  const inputWrap = document.createElement('div');
+  inputWrap.className = 'aic-input-wrap';
+  inputWrap.setAttribute(SLOT_ATTRIBUTE, 'suggestions');
+  inputWrap.appendChild(input);
+  slots.suggestions = inputWrap;
+  body.append(attachments, inputWrap);
+
+  const surface = createEditableSurface(editor, input, { id: input.id || undefined });
 
   const suggestionList = createSuggestionList(editor, undefined, {
     renderItem: options.renderSuggestionItem,
     inputHost: input,
   });
-  suggestionsAnchor.appendChild(suggestionList.element);
+  inputWrap.appendChild(suggestionList.element);
 
-  // Toolbar buttons
-  const buttons: Record<string, HTMLButtonElement> = {};
-  for (const action of template.toolbarButtons ?? []) {
-    if (!toolbar) break;
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `aic-toolbar-${action}`;
-    if (action === 'submit') {
-      button.textContent = labels.submit;
-      button.setAttribute('data-aic-action', 'submit');
-      button.addEventListener('click', () => void editor.executeCommand('submit'));
-    } else if (action === 'undo') {
-      button.textContent = labels.undo;
-      button.setAttribute('data-aic-action', 'undo');
-      button.addEventListener('click', () => void editor.executeCommand('undo'));
-    } else {
-      button.textContent = labels.redo;
-      button.setAttribute('data-aic-action', 'redo');
-      button.addEventListener('click', () => void editor.executeCommand('redo'));
-    }
-    buttons[action] = button;
-    toolbar.appendChild(button);
-  }
+  // -- mode presets ----------------------------------------------------------
 
-  // State-driven UI (attachments, button availability, mode attr)
-  const unsubscribeState = editor.subscribe((state) => {
-    const canSubmit = !state.disabled && !state.readonly && !state.submitting && (!state.empty || state.attachments.length > 0);
-    if (buttons.submit) {
-      buttons.submit.disabled = !canSubmit;
-      buttons.submit.setAttribute('aria-disabled', String(!canSubmit));
-      buttons.submit.textContent = state.submitting ? '…' : labels.submit;
-    }
-    if (buttons.undo) buttons.undo.disabled = !state.canUndo;
-    if (buttons.redo) buttons.redo.disabled = !state.canRedo;
+  const applyTemplate = (mode: string): void => {
+    const template = options.template ?? templateForMode(mode);
+    const present = new Set(template.slots);
+    for (const slotName of options.showSlots ?? []) present.add(slotName);
 
-    if (attachments) {
-      attachments.textContent = '';
-      attachments.toggleAttribute('hidden', state.attachments.length === 0);
-      for (const attachment of state.attachments) {
-        const item = document.createElement('span');
-        item.className = 'aic-attachment';
-        const name = document.createElement('span');
-        name.className = 'aic-attachment-name';
-        name.textContent = attachment.name;
-        const remove = document.createElement('button');
-        remove.type = 'button';
-        remove.className = 'aic-attachment-remove';
-        remove.setAttribute('aria-label', `${labels.removeAttachment} ${attachment.name}`);
-        remove.textContent = '×';
-        remove.addEventListener('click', () => editor.removeNode(attachment.key));
-        item.append(name, remove);
-        attachments.appendChild(item);
+    root.setAttribute('data-aic-mode', template.name);
+    header.hidden = !present.has('header');
+    toolbar.hidden = !present.has('toolbar');
+    footer.hidden = !present.has('footer');
+    surface.setMultiline(template.multiline);
+    surface.setSubmitKey(template.submitKey);
+
+    if (toolbar) {
+      toolbar.textContent = '';
+      for (const action of template.toolbarButtons ?? []) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `aic-toolbar-${action}`;
+        button.setAttribute('data-aic-action', action);
+        if (action === 'submit') {
+          button.textContent = labels.submit;
+          button.setAttribute('aria-label', 'Send');
+          button.addEventListener('click', () => void editor.executeCommand('submit'));
+        } else if (action === 'undo') {
+          button.textContent = labels.undo;
+          button.setAttribute('aria-label', 'Undo');
+          button.addEventListener('click', () => void editor.executeCommand('undo'));
+        } else {
+          button.textContent = labels.redo;
+          button.setAttribute('aria-label', 'Redo');
+          button.addEventListener('click', () => void editor.executeCommand('redo'));
+        }
+        toolbar.appendChild(button);
       }
     }
-  });
+  };
+
+  // -- state-driven UI -------------------------------------------------------
+
+  let currentMode = '';
+  const syncUi = (state: ReturnType<PromptEditor['getState']>): void => {
+    if (state.mode !== currentMode) {
+      currentMode = state.mode;
+      applyTemplate(state.mode);
+    }
+
+    const submit = toolbar.querySelector<HTMLButtonElement>('[data-aic-action="submit"]');
+    if (submit) {
+      const canSubmit =
+        !state.disabled && !state.readonly && !state.submitting &&
+        (!state.empty || state.attachments.length > 0);
+      submit.disabled = !canSubmit;
+      submit.setAttribute('aria-disabled', String(!canSubmit));
+      submit.textContent = state.submitting ? '…' : labels.submit;
+    }
+    const undo = toolbar.querySelector<HTMLButtonElement>('[data-aic-action="undo"]');
+    if (undo) undo.disabled = !state.canUndo;
+    const redo = toolbar.querySelector<HTMLButtonElement>('[data-aic-action="redo"]');
+    if (redo) redo.disabled = !state.canRedo;
+
+    // Attachments are projection-friendly: visible whenever they exist,
+    // regardless of the mode preset (apps add them via editor.addAttachment).
+    attachments.hidden = state.attachments.length === 0;
+    attachments.textContent = '';
+    for (const attachment of state.attachments) {
+      const item = document.createElement('span');
+      item.className = 'aic-attachment';
+      const name = document.createElement('span');
+      name.className = 'aic-attachment-name';
+      name.textContent = attachment.name;
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'aic-attachment-remove';
+      remove.setAttribute('aria-label', `${labels.removeAttachment} ${attachment.name}`);
+      remove.textContent = '×';
+      remove.addEventListener('click', () => editor.removeNode(attachment.key));
+      item.append(name, remove);
+      attachments.appendChild(item);
+    }
+  };
+  const unsubscribeState = editor.subscribe(syncUi);
   disposables.push(unsubscribeState);
 
-  const onDestroy = (): void => mounted.destroy();
-  editor.on('destroy', onDestroy);
+  if (options.mode && options.mode !== editor.getState().mode) {
+    editor.setMode(options.mode);
+  }
+  // setMode emits to subscribers; ensure the initial template is applied even
+  // when the editor was already in the target mode.
+  currentMode = editor.getState().mode;
+  applyTemplate(currentMode);
+  syncUi(editor.getState());
+
+  const offDestroy = editor.on('destroy', () => mounted.destroy());
+  disposables.push(offDestroy);
 
   const mounted: MountedEditor = {
     root,

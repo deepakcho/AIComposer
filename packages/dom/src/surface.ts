@@ -46,6 +46,10 @@ export interface EditableSurface {
   render(): void;
   focus(options?: { at?: 'start' | 'end' }): void;
   blur(): void;
+  /** Multiline hint (a11y + newline handling) — updated on mode switches. */
+  setMultiline(multiline: boolean): void;
+  /** Submit-key override (mode presets) — cleared with `undefined`. */
+  setSubmitKey(key: SubmitKey | undefined): void;
   destroy(): void;
 }
 
@@ -59,11 +63,16 @@ export function createEditableSurface(
   options: EditableSurfaceOptions = {},
 ): EditableSurface {
   const surfaceId = options.id ?? `aic-input-${(surfaceCounter += 1)}`;
-  const submitKey = (): SubmitKey => options.submitKey ?? editor.getConfig().submitKey ?? 'enter';
+  let submitKeyOverride = options.submitKey;
+  const submitKey = (): SubmitKey => submitKeyOverride ?? editor.getConfig().submitKey ?? 'enter';
+  const ariaLabel = (): string =>
+    options.ariaLabel ?? editor.getConfig().placeholder ?? 'AI Composer';
 
   let composing = false;
   let rendering = false;
+  let fromDom = false;
   let destroyed = false;
+  let multiline = options.multiline ?? true;
   let lastRendered: PromptDocument | null = null;
   const disposables: Unsubscribe[] = [];
 
@@ -71,7 +80,8 @@ export function createEditableSurface(
   host.classList.add(EDITABLE_SURFACE_CLASS);
   host.setAttribute('data-aic-input', '');
   host.setAttribute('role', 'textbox');
-  host.setAttribute('aria-multiline', String(options.multiline ?? false));
+  host.setAttribute('aria-label', ariaLabel());
+  host.setAttribute('aria-multiline', String(multiline));
   host.spellcheck = false;
 
   // -- rendering -----------------------------------------------------------
@@ -98,13 +108,35 @@ export function createEditableSurface(
     }
     host.toggleAttribute('data-aic-readonly', state.readonly);
     host.toggleAttribute('data-aic-disabled', state.disabled);
+    host.setAttribute('aria-label', ariaLabel());
     if (state.placeholder) {
       host.setAttribute('data-placeholder', state.placeholder);
-      host.setAttribute('aria-label', options.ariaLabel ?? state.placeholder);
     }
     host.toggleAttribute('data-aic-empty', state.empty);
 
-    if (state.value !== lastRendered) render();
+    if (state.value !== lastRendered) {
+      if (fromDom) {
+        // The change originated from this host's own input event — the DOM
+        // already reflects it. Re-rendering under the browser's active input
+        // processing corrupts caret/insert state (duplicated keystrokes).
+        lastRendered = state.value;
+      } else {
+        render();
+      }
+    }
+    syncMultilineHint();
+  }
+
+  /**
+   * Multiline detection for styling (compact pill → rounded box) and a11y:
+   * true when the model contains a newline OR the content spans more than one
+   * line box (soft wrap). Growth then comes from `height: auto`; the cap is
+   * `--aic-input-max-height` with an internal scrollbar.
+   */
+  function syncMultilineHint(): void {
+    const hasNewline = documentToText(editor.getValue(), { nodes: editor.nodes }).includes('\n');
+    const multiline = hasNewline || spansMultipleLines(host);
+    host.toggleAttribute('data-aic-multiline', multiline);
   }
 
   // -- input pipeline --------------------------------------------------------
@@ -113,7 +145,12 @@ export function createEditableSurface(
     if (destroyed || rendering || composing) return;
     const parsed = parseEditableHost(host, editor.nodes);
     const selection = domSelectionToModel(host, parsed);
-    editor.applyViewUpdate(parsed, selection ?? undefined);
+    fromDom = true;
+    try {
+      editor.applyViewUpdate(parsed, selection ?? undefined);
+    } finally {
+      fromDom = false;
+    }
   }
 
   function handleEnter(shiftKey: boolean): void {
@@ -313,6 +350,13 @@ export function createEditableSurface(
     blur() {
       host.blur();
     },
+    setMultiline(next: boolean) {
+      multiline = next;
+      host.setAttribute('aria-multiline', String(next));
+    },
+    setSubmitKey(key: SubmitKey | undefined) {
+      submitKeyOverride = key;
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
@@ -334,6 +378,22 @@ export function createEditableSurface(
 
 function documentText(editor: PromptEditor, doc: PromptDocument): string {
   return documentToText(doc, { nodes: editor.nodes });
+}
+
+/** True when the host's content occupies more than one visual line. */
+function spansMultipleLines(host: HTMLElement): boolean {
+  const doc = host.ownerDocument;
+  const range = doc.createRange();
+  range.selectNodeContents(host);
+  if (typeof range.getClientRects !== 'function') return false; // jsdom
+  const rects = range.getClientRects();
+  if (rects.length === 0) return false;
+  const firstTop = rects[0].top;
+  for (let index = 1; index < rects.length; index += 1) {
+    // Same-line rects (chips, inline runs) share a top within a tolerance.
+    if (Math.abs(rects[index].top - firstTop) > 2) return true;
+  }
+  return false;
 }
 
 /** Clone the nodes intersecting the current selection (used for copy). */

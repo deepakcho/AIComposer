@@ -1,7 +1,7 @@
 /* Dark theme — override tokens only; structure comes from default.css.
-   Usage: import tokens.css, default.css, then dark.css. */
+   Opt-in: set data-aic-theme="dark" on <html> (or any ancestor, or the
+   .aic-root element itself). Importing this file alone changes nothing. */
 
-.aic-root,
 .aic-root[data-aic-theme='dark'],
 [data-aic-theme='dark'] .aic-root {
   --aic-background: #16181d;

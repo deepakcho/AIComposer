@@ -31,8 +31,8 @@ export interface PromptDomTemplate {
 
 export const COMPACT_TEMPLATE: PromptDomTemplate = {
   name: 'compact',
-  slots: ['body', 'input', 'suggestions'],
-  multiline: false,
+  slots: ['body', 'attachments', 'input', 'suggestions'],
+  multiline: true,
   submitKey: 'enter',
 };
 

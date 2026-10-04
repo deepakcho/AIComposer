@@ -187,10 +187,36 @@ describe('mountPromptEditor (vanilla)', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('compact layout has no toolbar', () => {
+  it('compact hides the toolbar; modes switch live without remount', () => {
+    const editor = createPromptEditor({ mode: 'compact', value: 'draft' });
+    const mounted = mountPromptEditor(container, editor);
+
+    expect(mounted.root.getAttribute('data-aic-mode')).toBe('compact');
+    expect(mounted.slots.toolbar.hidden).toBe(true);
+    // Compact is multiline-capable (wraps + grows); single line stays flagged.
+    expect(mounted.input.getAttribute('aria-multiline')).toBe('true');
+    expect(mounted.input.hasAttribute('data-aic-multiline')).toBe(false);
+
+    editor.setMode('chat');
+    expect(mounted.root.getAttribute('data-aic-mode')).toBe('chat');
+    expect(mounted.slots.toolbar.hidden).toBe(false);
+    expect(mounted.slots.toolbar.querySelector('[data-aic-action="submit"]')).not.toBeNull();
+    // Same surface instance — the draft and undo history survive the switch.
+    expect(editor.serialize('text')).toBe('draft');
+    expect(mounted.input.textContent).toBe('draft');
+    mounted.destroy();
+  });
+
+  it('multiline detection flags wrapped/newline content (data-aic-multiline)', () => {
     const editor = createPromptEditor({ mode: 'compact' });
     const mounted = mountPromptEditor(container, editor);
-    expect(mounted.slots.toolbar).toBeUndefined();
+
+    mounted.input.textContent = 'line one\nline two';
+    mounted.input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(mounted.input.hasAttribute('data-aic-multiline')).toBe(true);
+
+    editor.setValue('single line');
+    expect(mounted.input.hasAttribute('data-aic-multiline')).toBe(false);
     mounted.destroy();
   });
 

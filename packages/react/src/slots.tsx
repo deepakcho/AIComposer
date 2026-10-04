@@ -11,7 +11,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { createEditableSurface, createSuggestionList } from '@ai-composer/dom';
+import { createEditableSurface, createSuggestionList, attachCaretAnchoredPopup } from '@ai-composer/dom';
 import {
   usePromptEditorContext,
   usePromptState,
@@ -55,16 +55,12 @@ export function PromptBody({ children }: { children?: ReactNode }): JSX.Element 
 export const PromptInput = forwardRef<HTMLDivElement, { className?: string; id?: string; suggestions?: boolean }>(
   function PromptInput({ className, id, suggestions = true }, ref) {
     const editor = usePromptEditorContext();
-    const state = usePromptState(editor);
     const hostRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
       const host = hostRef.current;
       if (!host) return;
-      const surface = createEditableSurface(editor, host, {
-        multiline: state.mode !== 'compact',
-        id,
-      });
+      const surface = createEditableSurface(editor, host, { id });
       const list = suggestions ? createSuggestionList(editor, undefined, { inputHost: host }) : null;
       const anchor = host.parentElement;
       if (list && anchor) anchor.appendChild(list.element);
@@ -72,10 +68,10 @@ export const PromptInput = forwardRef<HTMLDivElement, { className?: string; id?:
         list?.destroy();
         surface.destroy();
       };
-    }, [editor, state.mode, suggestions, id]);
+    }, [editor, suggestions, id]);
 
     return (
-      <div className="aic-suggestions-anchor" style={{ position: 'relative' }}>
+      <div className="aic-input-wrap">
         <div
           ref={(node) => {
             hostRef.current = node;
@@ -126,16 +122,37 @@ export function PromptAttachments({
 export function PromptSuggestions({
   renderItem,
   className,
+  placement = 'above',
 }: {
   renderItem?: (item: ReturnType<typeof usePromptSuggestions>['items'][number], active: boolean) => ReactNode;
   className?: string;
+  /** Preferred placement relative to the caret; flips to fit the viewport. */
+  placement?: 'above' | 'below';
 }): JSX.Element | null {
   const editor = usePromptEditorContext();
   const { items, activeIndex, open, accept } = usePromptSuggestions(editor);
+  const listRef = useRef<HTMLUListElement | null>(null);
   const listId = useMemo(() => `aic-suggestions-react-${Math.random().toString(36).slice(2, 8)}`, []);
+
+  // Caret-anchored, viewport-aware positioning from the DOM layer.
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list || !open) return;
+    const host = list.closest('.aic-root')?.querySelector<HTMLElement>('[data-aic-input]');
+    if (!host) return;
+    const anchor = attachCaretAnchoredPopup(list, host, { placement });
+    anchor.update();
+    return () => anchor.destroy();
+  }, [open, items, activeIndex, placement]);
+
   if (!open) return null;
   return (
-    <ul className={className ?? 'aic-suggestions'} role="listbox" id={listId}>
+    <ul
+      ref={listRef}
+      className={className ?? 'aic-suggestions'}
+      role="listbox"
+      id={listId}
+    >
       {items.map((item, index) => {
         const active = index === activeIndex;
         return (
@@ -169,7 +186,7 @@ export function PromptSuggestions({
 export function PromptToolbar({
   children,
   actions,
-  submitLabel = 'Send',
+  submitLabel = '↑',
 }: {
   children?: ReactNode;
   /** Default buttons when no children: 'submit' | 'undo' | 'redo' (default ['submit']). */
@@ -194,6 +211,7 @@ export function PromptToolbar({
                 data-aic-action="submit"
                 disabled={!canSubmit || state.submitting}
                 aria-disabled={!canSubmit || state.submitting}
+                aria-label="Send"
                 onClick={() => void editor.executeCommand('submit')}
               >
                 {state.submitting ? '…' : submitLabel}
@@ -208,9 +226,10 @@ export function PromptToolbar({
               className={`aic-toolbar-${action}`}
               data-aic-action={action}
               disabled={!enabled}
+              aria-label={action}
               onClick={() => void editor.executeCommand(action)}
             >
-              {action === 'undo' ? 'Undo' : 'Redo'}
+              {action === 'undo' ? '↺' : '↻'}
             </button>
           );
         })}

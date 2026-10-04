@@ -18,7 +18,7 @@ const editor = createPromptEditor({
   placeholder: 'Ask anything… try @mentions and /commands',
   submit: {
     clearOnSubmit: true,
-    onSubmit: (value) => {
+    onSubmit: () => {
       // eslint-disable-next-line no-console
       console.log('submit', editor.serialize('ai'));
     },
@@ -36,7 +36,7 @@ const editor = createPromptEditor({
 });
 
 const container = document.querySelector<HTMLElement>('#composer')!;
-const mounted = mountPromptEditor(container, editor, {
+mountPromptEditor(container, editor, {
   mode: 'chat',
   renderSuggestionItem: (item, active) => {
     const li = document.createElement('li');
@@ -73,15 +73,13 @@ const render = (): void => {
 editor.subscribe(render);
 render();
 
+// Mode switching is live: same editor instance, draft/focus/undo preserved.
 document.querySelector('#mode')!.addEventListener('change', (event) => {
-  const mode = (event.target as HTMLSelectElement).value;
-  container.textContent = '';
-  mounted.destroy();
-  const next = mountPromptEditor(container, editor, { mode });
-  void next;
+  editor.setMode((event.target as HTMLSelectElement).value);
 });
 
 document.querySelector('#theme')!.addEventListener('change', (event) => {
   const theme = (event.target as HTMLSelectElement).value;
-  document.documentElement.setAttribute('data-aic-theme', theme);
+  if (theme) document.documentElement.setAttribute('data-aic-theme', theme);
+  else document.documentElement.removeAttribute('data-aic-theme');
 });

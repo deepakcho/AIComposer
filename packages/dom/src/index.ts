@@ -26,6 +26,13 @@ export {
   type SuggestionListOptions,
 } from './suggestions';
 export {
+  attachCaretAnchoredPopup,
+  measureCaret,
+  type CaretAnchor,
+  type CaretAnchorOptions,
+  type CaretPoint,
+} from './popup';
+export {
   CHAT_TEMPLATE,
   COMPACT_TEMPLATE,
   DEFAULT_TEMPLATE,

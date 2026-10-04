@@ -17,6 +17,7 @@ import {
   defineComponent,
   h,
   inject,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -37,7 +38,7 @@ import {
   type PromptEditorState,
   type SuggestionItem,
 } from '@ai-composer/core';
-import { createEditableSurface, createSuggestionList } from '@ai-composer/dom';
+import { createEditableSurface, createSuggestionList, attachCaretAnchoredPopup, type CaretAnchor } from '@ai-composer/dom';
 
 const EditorKey: InjectionKey<PromptEditorType> = Symbol('ai-composer-editor');
 
@@ -93,7 +94,9 @@ export const PromptEditor = defineComponent({
       type: [Object, String] as PropType<PromptDocument | string | undefined>,
       default: undefined,
     },
-    submitLabel: { type: String, default: 'Send' },
+    submitLabel: { type: String, default: '↑' },
+    /** Auto-height ceiling (px or CSS length); scrolls after the cap. */
+    maxHeight: { type: [Number, String], default: undefined },
   },
   emits: {
     'update:modelValue': (value: PromptDocument) => !!value,
@@ -113,6 +116,11 @@ export const PromptEditor = defineComponent({
       if (Object.keys(patch).length > 0) editor.configure(patch);
     };
     applyConfig();
+    // React to runtime prop changes (e.g. toggling mode compact ↔ expanded).
+    watch(
+      () => [props.mode, props.placeholder, props.disabled, props.readonly],
+      applyConfig,
+    );
 
     editor.on('change', (event) => {
       emit('change', event.value);
@@ -137,6 +145,9 @@ export const PromptEditor = defineComponent({
 
     return () => {
       const mode = state.value.mode;
+      const rootStyle = props.maxHeight !== undefined
+        ? { '--aic-input-max-height': typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : props.maxHeight }
+        : undefined;
       const children: VNode[] = [];
       if (slots.default) {
         children.push(...slots.default({ state: state.value, editor }));
@@ -144,16 +155,17 @@ export const PromptEditor = defineComponent({
         children.push(
           h('div', { class: 'aic-body', 'data-aic-slot': 'body' }, [
             h(PromptAttachmentsVue),
+            // PromptInput mounts the suggestion popup inside its own wrapper
             h(PromptInputVue),
           ]),
-          h(PromptSuggestionsVue),
-          h(PromptToolbarVue, { submitLabel: props.submitLabel }),
         );
-        if (mode === 'expanded') children.push(h('div', { class: 'aic-footer', 'data-aic-slot': 'footer' }));
+        if (mode === 'chat' || mode === 'expanded') {
+          children.push(h(PromptToolbarVue, { submitLabel: props.submitLabel }));
+        }
       }
       return h(
         'div',
-        { class: 'aic-root', 'data-aic-mode': mode },
+        { class: 'aic-root', 'data-aic-mode': mode, style: rootStyle },
         children,
       );
     };
@@ -168,15 +180,12 @@ export const PromptInput = defineComponent({
   },
   setup(props) {
     const editor = usePromptEditorFromContext();
-    const state = usePromptState(editor);
     const host = ref<HTMLElement | null>(null);
 
     onMounted(() => {
       const element = host.value;
       if (!element) return;
-      const surface = createEditableSurface(editor, element, {
-        multiline: state.value.mode !== 'compact',
-      });
+      const surface = createEditableSurface(editor, element);
       const list = props.suggestions ? createSuggestionList(editor, undefined, { inputHost: element }) : null;
       if (list && element.parentElement) element.parentElement.appendChild(list.element);
       onBeforeUnmount(() => {
@@ -186,7 +195,7 @@ export const PromptInput = defineComponent({
     });
 
     return () =>
-      h('div', { class: 'aic-suggestions-anchor', style: { position: 'relative' } }, [
+      h('div', { class: 'aic-input-wrap' }, [
         h('div', {
           ref: host,
           class: 'aic-input-host',
@@ -204,16 +213,40 @@ export const PromptSuggestions = defineComponent({
       type: Function as PropType<(item: SuggestionItem, active: boolean) => VNode>,
       default: undefined,
     },
+    /** Preferred placement relative to the caret; flips to fit the viewport. */
+    placement: { type: String as PropType<'above' | 'below'>, default: 'above' },
   },
   setup(props, { slots }) {
     const editor = usePromptEditorFromContext();
     const state = usePromptState(editor);
+    const list = ref<HTMLElement | null>(null);
+    let anchor: CaretAnchor | null = null;
+
+    // Caret-anchored, viewport-aware positioning from the DOM layer.
+    watch(
+      () => [state.value.activeTrigger, state.value.suggestions.length],
+      async () => {
+        await nextTick();
+        const element = list.value;
+        if (!element || state.value.suggestions.length === 0) return;
+        const host = element.closest('.aic-root')?.querySelector<HTMLElement>('[data-aic-input]');
+        if (!host) return;
+        if (!anchor) anchor = attachCaretAnchoredPopup(element, host, { placement: props.placement });
+        anchor.update();
+      },
+    );
+    onBeforeUnmount(() => anchor?.destroy());
+
     return () => {
       const current = state.value;
       if (!current.activeTrigger || current.suggestions.length === 0) return null;
       return h(
         'ul',
-        { class: 'aic-suggestions', role: 'listbox' },
+        {
+          ref: list,
+          class: 'aic-suggestions',
+          role: 'listbox',
+        },
         current.suggestions.map((item, index) => {
           const active = index === current.activeSuggestionIndex;
           return h(
@@ -237,7 +270,6 @@ export const PromptSuggestions = defineComponent({
     };
   },
 });
-const PromptSuggestionsVue = PromptSuggestions;
 
 export const PromptAttachments = defineComponent({
   name: 'AicPromptAttachments',
@@ -274,7 +306,7 @@ const PromptAttachmentsVue = PromptAttachments;
 export const PromptToolbar = defineComponent({
   name: 'AicPromptToolbar',
   props: {
-    submitLabel: { type: String, default: 'Send' },
+    submitLabel: { type: String, default: '↑' },
     actions: {
       type: Array as PropType<Array<'submit' | 'undo' | 'redo'>>,
       default: () => ['submit'],
@@ -298,6 +330,7 @@ export const PromptToolbar = defineComponent({
               type: 'button',
               class: 'aic-toolbar-submit',
               'data-aic-action': action,
+              ariaLabel: 'Send',
               disabled: !canSubmit || current.submitting,
               onClick: () => void editor.executeCommand('submit'),
             },

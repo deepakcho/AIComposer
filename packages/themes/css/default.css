@@ -1,10 +1,26 @@
-/* Default theme — structural styling for the data-aic-* markup emitted by
-   core/dom and all adapters. Import order:
-   tokens.css → (default|dark|compact).css → your overrides. */
+/* Default theme — Copilot-style composer.
+   Structure comes from core/dom (data-aic-*); every value flows from tokens.
+   Import order: tokens.css → default.css → (dark|compact).css → your overrides.
+
+   Modes are visually distinct:
+     compact  — single-line pill, no chrome
+     chat     — auto-growing multiline box, attachments row, circular send button
+     expanded — tall canvas with header, rich toolbar and footer
+*/
 
 @import './tokens.css';
 
+/* Scoped reset so min-/max-height math includes padding (height caps work). */
+.aic-root,
+.aic-root *,
+.aic-root *::before,
+.aic-root *::after {
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------------------------ root */
 .aic-root {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--aic-background);
@@ -13,6 +29,11 @@
   font-family: var(--aic-font-family);
   font-size: var(--aic-font-size);
   color: var(--aic-text);
+  transition: border-color var(--aic-transition), box-shadow var(--aic-transition);
+  /* Auto-height ceiling: grows with content up to this, then scrolls inside.
+     Modes retune it; values may use viewport units so the box never outgrows
+     the space actually available. */
+  --aic-input-max-height: 200px;
 }
 
 .aic-root:focus-within {
@@ -25,72 +46,65 @@
   pointer-events: none;
 }
 
-.aic-root[data-aic-mode='compact'] {
-  border-radius: var(--aic-radius-sm);
-}
-
 .aic-body {
+  position: relative; /* anchor for custom-renderer suggestion popups */
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
-/* editable surface */
+/* --------------------------------------------------- input + popup anchor */
+/* The wrapper occupies exactly the input's space; popups float out of it. */
+.aic-input-wrap {
+  position: relative;
+}
+
 .aic-input-host {
+  display: block;
+  height: auto;               /* auto-grow: the box expands with content */
   padding: var(--aic-input-padding);
   min-height: var(--aic-input-min-height);
-  max-height: var(--aic-input-max-height);
-  overflow-y: auto;
+  max-height: var(--aic-input-max-height); /* cap: scroll once space runs out */
   outline: none;
+  overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.5;
 }
 
-.aic-root[data-aic-mode='compact'] .aic-input-host {
-  min-height: 36px;
-  max-height: 120px;
-}
-
-.aic-root[data-aic-mode='expanded'] .aic-input-host {
-  min-height: 200px;
-}
-
+/* placeholder */
 .aic-input-host[data-aic-empty=''][data-placeholder]::before {
   content: attr(data-placeholder);
   color: var(--aic-text-placeholder);
   pointer-events: none;
-  position: absolute;
 }
 
-.aic-suggestions-anchor {
-  position: relative;
-}
-
-/* chips */
+/* ------------------------------------------------------------- chips */
 .aic-chip {
   display: inline-block;
   background: var(--aic-chip-background);
   color: var(--aic-chip-text);
   border-radius: 999px;
-  padding: 0 8px;
+  padding: 1px 8px;
   margin: 0 1px;
   font-weight: 500;
+  font-size: 0.95em;
+  line-height: 1.5;
   white-space: nowrap;
   user-select: all;
 }
 
-/* suggestions */
+/* ------------------------------------------------------- suggestion popup */
+/* True popup: absolutely positioned by the dom layer inside .aic-input-wrap.
+   It never reserves layout space. */
 .aic-suggestions {
   list-style: none;
-  margin: 4px 0 0;
+  box-sizing: border-box;
+  margin: 0;
   padding: 4px;
   background: var(--aic-background);
   border: var(--aic-border-width) solid var(--aic-border);
   border-radius: var(--aic-radius-sm);
   box-shadow: var(--aic-shadow);
-  z-index: var(--aic-z-suggestions);
-  max-height: 260px;
   overflow-y: auto;
 }
 
@@ -117,7 +131,7 @@
   font-size: 0.85em;
 }
 
-/* attachments */
+/* ------------------------------------------------------- attachments row */
 .aic-attachments {
   display: flex;
   flex-wrap: wrap;
@@ -145,61 +159,142 @@
   font-size: 1em;
 }
 
-/* toolbar */
+/* ------------------------------------------------------------ toolbar */
 .aic-toolbar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   min-height: var(--aic-toolbar-height);
   padding: 6px 10px;
 }
 
+/* Copilot-style circular action buttons */
 .aic-toolbar button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
   border: none;
-  border-radius: var(--aic-radius-sm);
-  background: var(--aic-accent);
-  color: var(--aic-accent-contrast);
-  font-size: 0.95em;
-  font-weight: 500;
-  padding: 6px 14px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--aic-text-muted);
+  font-size: 1em;
+  line-height: 1;
   cursor: pointer;
-  transition: filter var(--aic-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--aic-transition), color var(--aic-transition);
 }
 
 .aic-toolbar button:hover:not(:disabled) {
-  filter: brightness(1.05);
+  background: var(--aic-surface-raised);
+  color: var(--aic-text);
 }
 
 .aic-toolbar button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: default;
 }
 
-.aic-toolbar button[data-aic-action='undo'],
-.aic-toolbar button[data-aic-action='redo'] {
-  background: transparent;
-  color: var(--aic-text-muted);
-  border: var(--aic-border-width) solid var(--aic-border);
+/* The send button is the primary circular action (Copilot arrow) */
+.aic-toolbar button[data-aic-action='submit'] {
+  width: 32px;
+  min-width: 32px;
+  padding: 0;
+  background: var(--aic-accent);
+  color: var(--aic-accent-contrast);
+  font-size: 1.05em;
+  font-weight: 700;
+}
+
+.aic-toolbar button[data-aic-action='submit']:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--aic-accent);
 }
 
 .aic-header,
 .aic-footer {
-  padding: 8px 12px;
+  padding: 8px 14px;
   color: var(--aic-text-muted);
   font-size: 0.9em;
 }
 
-/* reduced motion */
+/* ======================================================================
+   MODES — visually distinct presets
+   ====================================================================== */
+
+/* COMPACT — inline pill (Copilot review-box style): pill while single-line,
+   grows with wrapped/newline content (data-aic-multiline) into a rounded
+   box, then scrolls at the cap. Never clips text. */
+.aic-root[data-aic-mode='compact'] {
+  --aic-radius: 999px;
+  --aic-input-padding: 6px 16px;
+  --aic-input-min-height: 40px;
+  --aic-input-max-height: 120px;
+  --aic-toolbar-height: 0px;
+}
+
+/* Multiline content morphs the pill into a rounded box. */
+.aic-root[data-aic-mode='compact']:has(.aic-input-host[data-aic-multiline]) {
+  --aic-radius: 14px;
+}
+
+/* CHAT — auto-growing box (Copilot chat): starts small, grows to a cap */
+.aic-root[data-aic-mode='chat'] {
+  --aic-input-min-height: 28px;
+  --aic-radius: 14px;
+  --aic-input-max-height: min(200px, 55vh);
+}
+
+@supports (height: 1dvh) {
+  .aic-root[data-aic-mode='chat'] {
+    --aic-input-max-height: min(200px, 55dvh);
+  }
+}
+
+.aic-root[data-aic-mode='chat'] .aic-input-host {
+  padding: 12px 14px 2px;
+}
+
+.aic-root[data-aic-mode='chat'] .aic-toolbar {
+  border-top: none;
+  padding: 4px 8px 8px;
+}
+
+/* EXPANDED — a tall writing canvas with full chrome */
+.aic-root[data-aic-mode='expanded'] {
+  --aic-radius: 16px;
+  --aic-input-min-height: 220px;
+  --aic-input-max-height: 60vh;
+}
+
+@supports (height: 1dvh) {
+  .aic-root[data-aic-mode='expanded'] {
+    --aic-input-max-height: 60dvh;
+  }
+}
+
+.aic-root[data-aic-mode='expanded'] .aic-toolbar {
+  border-top: var(--aic-border-width) solid var(--aic-border);
+  justify-content: space-between;
+}
+
+.aic-root[data-aic-mode='expanded'] .aic-toolbar::before {
+  content: 'Expanded editor';
+  font-size: 0.8em;
+  color: var(--aic-text-placeholder);
+}
+
+/* ------------------------------------------------------ a11y preferences */
 @media (prefers-reduced-motion: reduce) {
-  .aic-root *,
-  .aic-root {
+  .aic-root,
+  .aic-root * {
     transition: none !important;
     animation: none !important;
   }
 }
 
-/* high contrast */
 @media (prefers-contrast: more) {
   .aic-root {
     border-width: 2px;

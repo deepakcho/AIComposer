@@ -6,12 +6,45 @@ may use it or ignore it completely.
 
 ## Built-in modes
 
-| Mode | Slots | Multiline | Enter | Toolbar |
+| Mode | Shape | Enter | Toolbar | Default max height |
 | --- | --- | --- | --- | --- |
-| `compact` | body · input · suggestions | no | submit | — |
-| `default` | body · attachments · input · suggestions | yes | submit | — |
-| `chat` | header · body · attachments · input · suggestions · toolbar · actions | yes | submit (Shift+Enter newline) | send |
-| `expanded` | header · body · attachments · input · suggestions · toolbar · footer | yes | newline (Shift+Enter submits) | undo · redo · submit |
+| `compact` | single-line pill → rounded box on multiline | submit | — | `120px` |
+| `default` | auto-growing box | submit | — | `200px` |
+| `chat` | auto-growing box + circular send | submit (Shift+Enter newline) | send | `min(200px, 55dvh)` |
+| `expanded` | tall canvas | newline (Shift+Enter submits) | undo · redo · submit | `60dvh` |
+
+Modes are **live-switchable**: `editor.setMode('expanded')` morphs the mounted
+DOM in place — draft, selection and undo history survive (no remount).
+
+### Auto-height & max height
+
+Every mode auto-grows with content (`height: auto`) up to a ceiling, then
+scrolls inside. The ceiling is the `--aic-input-max-height` token — set it
+from anywhere:
+
+```tsx
+<PromptEditor mode="chat" maxHeight={96} />            // adapter prop (px or CSS length)
+```
+
+```html
+<ai-composer-editor mode="chat" max-height="40vh"></ai-composer-editor>
+```
+
+```css
+.my-composer { --aic-input-max-height: 160px; }        /* token override */
+```
+
+### Multiline detection (compact)
+
+The surface flags wrapped or newline content with
+`data-aic-multiline` on the input host. Compact uses it to morph the pill
+(radius `999px`) into a rounded box — text always wraps, never clips.
+
+### Slot projection
+
+Presets shape defaults; they never forbid content. Attachments render in
+every mode whenever they exist, and header/footer/toolbar can be forced on
+via `showSlots` (vanilla mount) or by composing slot components (adapters).
 
 ## Custom mode
 

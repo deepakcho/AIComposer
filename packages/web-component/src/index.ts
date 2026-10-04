@@ -10,7 +10,7 @@
  * </script>
  * ```
  *
- * Attributes: mode, placeholder, disabled, readonly.
+ * Attributes: mode, placeholder, disabled, readonly, max-height (CSS length).
  * Properties: editor (external PromptEditor), plugins, value.
  * Events:     aic-change, aic-input, aic-submit, aic-focus, aic-blur (CustomEvent, detail = payload).
  */
@@ -27,11 +27,12 @@ import { mountPromptEditor, type MountedEditor } from '@ai-composer/dom';
 
 const TAG_NAME = 'ai-composer-editor';
 
-const ATTRIBUTE_MAP: Record<string, 'mode' | 'placeholder' | 'disabled' | 'readonly'> = {
+const ATTRIBUTE_MAP: Record<string, 'mode' | 'placeholder' | 'disabled' | 'readonly' | 'maxHeight'> = {
   mode: 'mode',
   placeholder: 'placeholder',
   disabled: 'disabled',
   readonly: 'readonly',
+  'max-height': 'maxHeight',
 };
 
 const FORWARDED_EVENTS: PromptEditorEventType[] = [
@@ -51,12 +52,26 @@ export class AiComposerEditorElement extends HTMLElement {
     return Object.keys(ATTRIBUTE_MAP);
   }
 
-  /** Set BEFORE connection to seed an internally created editor. */
-  plugins: PromptPlugin[] = [];
-
+  private _plugins: PromptPlugin[] = [];
   private _editor: PromptEditor | null = null;
   private mounted: MountedEditor | null = null;
   private unsubscribes: Array<() => void> = [];
+
+  /**
+   * Plugins for the internally created editor. May be set before or after
+   * connection — after connection the internal editor is rebuilt.
+   */
+  get plugins(): PromptPlugin[] {
+    return this._plugins;
+  }
+  set plugins(value: PromptPlugin[]) {
+    this._plugins = value;
+    if (!this.isConnected) return;
+    this.teardown();
+    this._editor?.destroy();
+    this._editor = null;
+    this.remount();
+  }
 
   /** Use an externally owned editor (takes precedence over internal creation). */
   get editor(): PromptEditor | null {
@@ -89,9 +104,15 @@ export class AiComposerEditorElement extends HTMLElement {
   }
 
   attributeChangedCallback(name: string, _old: string | null, next: string | null): void {
-    if (!this._editor) return;
     const key = ATTRIBUTE_MAP[name];
     if (!key) return;
+    // Auto-height ceiling is a pure style concern (token override).
+    if (key === 'maxHeight') {
+      if (next === null) this.style.removeProperty('--aic-input-max-height');
+      else this.style.setProperty('--aic-input-max-height', next);
+      return;
+    }
+    if (!this._editor) return;
     if (key === 'disabled' || key === 'readonly') {
       this._editor.configure({ [key]: next !== null });
     } else if (next !== null) {
@@ -101,7 +122,7 @@ export class AiComposerEditorElement extends HTMLElement {
 
   private remount(): void {
     this.teardown();
-    if (!this._editor) this._editor = createPromptEditor({ plugins: this.plugins });
+    if (!this._editor) this._editor = createPromptEditor({ plugins: this._plugins });
 
     this.mounted = mountPromptEditor(this, this._editor, {
       mode: this.getAttribute('mode') ?? undefined,

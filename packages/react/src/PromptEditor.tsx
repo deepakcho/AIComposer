@@ -13,15 +13,7 @@ import type {
   PromptEditorOptions,
 } from '@ai-composer/core';
 import { usePromptEditor, usePromptState, PromptEditorContext } from './hooks';
-import {
-  PromptAttachments,
-  PromptBody,
-  PromptFooter,
-  PromptHeader,
-  PromptInput,
-  PromptSuggestions,
-  PromptToolbar,
-} from './slots';
+import { PromptAttachments, PromptBody, PromptInput, PromptToolbar } from './slots';
 
 export interface PromptEditorProps {
   /** External editor (Level 3). When omitted one is created from `options`. */
@@ -43,6 +35,11 @@ export interface PromptEditorProps {
   onSubmit?: (value: PromptDocument) => void;
   submitLabel?: string;
   toolbarActions?: Array<'submit' | 'undo' | 'redo'>;
+  /**
+   * Auto-height ceiling — number (px) or any CSS length ("40vh"). The box
+   * grows with content up to this height, then scrolls inside.
+   */
+  maxHeight?: number | string;
   'aria-label'?: string;
 }
 
@@ -61,6 +58,7 @@ export function PromptEditor({
   onSubmit,
   submitLabel,
   toolbarActions,
+  maxHeight,
   ...aria
 }: PromptEditorProps): JSX.Element {
   const createdEditor = usePromptEditor(externalEditor ? undefined : options);
@@ -100,20 +98,26 @@ export function PromptEditor({
   }, [editor, onSubmit]);
 
   const rootClass = className ? `aic-root ${className}` : 'aic-root';
+  const rootStyle = {
+    ...(maxHeight !== undefined
+      ? { '--aic-input-max-height': typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }
+      : {}),
+    ...style,
+  } as CSSProperties;
 
   return (
     <PromptEditorContext.Provider value={editor}>
-      <div className={rootClass} data-aic-mode={state.mode} style={style} {...aria}>
+      <div className={rootClass} data-aic-mode={state.mode} style={rootStyle} {...aria}>
         {children ?? (
           <>
-            {state.mode === 'chat' || state.mode === 'expanded' ? <PromptHeader /> : null}
             <PromptBody>
               <PromptAttachments />
+              {/* PromptInput mounts the suggestion popup inside its wrapper */}
               <PromptInput />
             </PromptBody>
-            <PromptSuggestions />
-            <PromptToolbar actions={toolbarActions} submitLabel={submitLabel} />
-            {state.mode === 'expanded' ? <PromptFooter /> : null}
+            {state.mode === 'expanded' || state.mode === 'chat' ? (
+              <PromptToolbar actions={toolbarActions} submitLabel={submitLabel} />
+            ) : null}
           </>
         )}
       </div>
