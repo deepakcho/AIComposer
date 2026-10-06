@@ -4,11 +4,11 @@
 
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, h, ref } from 'vue';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 import { createDemoEditor } from './utils';
 
 const meta: Meta = {
-  component: PromptEditor as never,
+  component: AIComposer as never,
   tags: ['autodocs'],
   title: 'AI Composer/Vue/Modes',
   parameters: {
@@ -21,8 +21,8 @@ const meta: Meta = {
   },
   args: { placeholder: 'Ask anything…' },
   render: (args) => ({
-    components: { PromptEditor },
-    setup: () => () => h(PromptEditor as never, { ...args }),
+    components: { AIComposer },
+    setup: () => () => h(AIComposer as never, { ...args }),
   }),
 };
 
@@ -33,7 +33,7 @@ export const Compact: Story = {
   args: { mode: 'compact', placeholder: 'Search or ask…' },
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="compact" placeholder="Search or ask…" />' },
+      source: { code: '<AIComposer mode="compact" placeholder="Search or ask…" />' },
       description: { story: 'Inline pill while single-line; wrapped/multiline content morphs it into a rounded auto-growing box (never clips). Attachments stay projectable.' },
     },
   },
@@ -46,11 +46,11 @@ export const MaxHeight: Story = {
     docs: {
       source: {
         code: `<!-- prop (px or any CSS length) -->
-<PromptEditor mode="chat" :max-height="96" />
+<AIComposer mode="chat" :max-height="96" />
 
 <!-- or the underlying token -->
 <div style="--aic-input-max-height: 40vh">
-  <PromptEditor mode="chat" />
+  <AIComposer mode="chat" />
 </div>`,
       },
     },
@@ -60,14 +60,14 @@ export const MaxHeight: Story = {
 export const Chat: Story = {
   args: { mode: 'chat' },
   parameters: {
-    docs: { source: { code: '<PromptEditor mode="chat" />' } },
+    docs: { source: { code: '<AIComposer mode="chat" />' } },
   },
 };
 
 export const Expanded: Story = {
-  args: { mode: 'expanded', placeholder: 'Write a long, detailed prompt…' },
+  args: { mode: 'expanded', placeholder: 'Write a detailed draft…' },
   parameters: {
-    docs: { source: { code: '<PromptEditor mode="expanded" />' } },
+    docs: { source: { code: '<AIComposer mode="expanded" />' } },
   },
 };
 
@@ -75,7 +75,7 @@ export const LiveSwitch: Story = {
   name: 'Live mode switching',
   render: () =>
     defineComponent({
-      components: { PromptEditor },
+      components: { AIComposer },
       setup() {
         const editor = createDemoEditor({ placeholder: 'Draft survives switching…' });
         const mode = ref<'compact' | 'chat' | 'expanded'>('chat');
@@ -103,7 +103,7 @@ export const LiveSwitch: Story = {
                 }, button.label),
               ),
             ),
-            h(PromptEditor as never, { editor, mode: mode.value }),
+            h(AIComposer as never, { editor, mode: mode.value }),
           ]);
       },
     }) as never,
@@ -112,7 +112,7 @@ export const LiveSwitch: Story = {
       source: {
         code: `const mode = ref<'compact' | 'chat' | 'expanded'>('chat');
 
-<PromptEditor :editor="editor" :mode="mode" />
+<AIComposer :editor="editor" :mode="mode" />
 <button @click="mode = 'expanded'">expand</button>`,
       },
     },

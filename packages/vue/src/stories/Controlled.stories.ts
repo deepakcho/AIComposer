@@ -4,10 +4,10 @@
 
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, h, ref } from 'vue';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 
 const meta: Meta = {
-  component: PromptEditor as never,
+  component: AIComposer as never,
   tags: ['autodocs'],
   title: 'AI Composer/Vue/v-model & Events',
   parameters: {
@@ -27,12 +27,12 @@ export const VModel: Story = {
   name: 'v-model · two-way binding',
   render: () =>
     defineComponent({
-      components: { PromptEditor },
+      components: { AIComposer },
       setup() {
         const value = ref('Bound via v-model');
         return () =>
           h('div', [
-            h(PromptEditor as never, {
+            h(AIComposer as never, {
               mode: 'compact',
               modelValue: value.value,
               'onUpdate:modelValue': (next: unknown) => {
@@ -48,7 +48,7 @@ export const VModel: Story = {
       source: {
         code: `const value = ref('Bound via v-model');
 
-<PromptEditor v-model="value" mode="compact" />
+<AIComposer v-model="value" mode="compact" />
 <p>Parent value: {{ value }}</p>`,
       },
     },
@@ -59,14 +59,14 @@ export const EventLog: Story = {
   name: 'Events · change / submit',
   render: () =>
     defineComponent({
-      components: { PromptEditor },
+      components: { AIComposer },
       setup() {
         const log = ref<string[]>([]);
         const doc = (value: unknown): string =>
           JSON.stringify(value);
         return () =>
           h('div', [
-            h(PromptEditor as never, {
+            h(AIComposer as never, {
               mode: 'chat',
               onChange: (value: unknown) => {
                 log.value = [`change → ${doc(value)}`, ...log.value.slice(0, 4)];
@@ -86,7 +86,7 @@ export const EventLog: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor
+        code: `<AIComposer
   mode="chat"
   @change="(value) => log('change', value)"
   @submit="(value) => log('submit', value)"

@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { createPromptEditor, type PromptDocument } from '@ai-composer/core';
+import { createAIComposer, type AIComposerDocument } from '@ai-composer/core';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
 import { AI_COMPOSER_IMPORTS } from '@ai-composer/angular';
 
@@ -11,15 +11,15 @@ import { AI_COMPOSER_IMPORTS } from '@ai-composer/angular';
     <main>
       <h1>AI Composer · Angular</h1>
 
-      <aic-prompt-editor
+      <aic-ai-composer
         [editor]="editor"
         mode="chat"
         placeholder="Ask anything… try @mentions"
         (submitted)="onSubmit($event)"
       >
         <div aic-header><strong>Context:</strong> ticket #42</div>
-        <div aic-toolbar><aic-submit-button /></div>
-      </aic-prompt-editor>
+        <div aic-toolbar><aic-ai-composer-submit /></div>
+      </aic-ai-composer>
 
       <p>
         Markdown: <code>{{ markdown() }}</code>
@@ -35,7 +35,7 @@ import { AI_COMPOSER_IMPORTS } from '@ai-composer/angular';
   ],
 })
 export class AppComponent {
-  readonly editor = createPromptEditor({
+  readonly editor = createAIComposer({
     mode: 'chat',
     plugins: [
       mentionPlugin({
@@ -56,7 +56,7 @@ export class AppComponent {
     });
   }
 
-  onSubmit(value: PromptDocument): void {
+  onSubmit(value: AIComposerDocument): void {
     this.lastSubmit.set(JSON.stringify(value, null, 2));
   }
 }

@@ -1,4 +1,4 @@
-/* Default theme — Copilot-style composer.
+/* Default theme — calm neutral composer (editor-area aesthetic).
    Structure comes from core/dom (data-aic-*); every value flows from tokens.
    Import order: tokens.css → default.css → (dark|compact).css → your overrides.
 
@@ -18,18 +18,30 @@
   box-sizing: border-box;
 }
 
+/* Mode presets hide slots with [hidden]; slot display rules (flex) must not
+   resurrect them. */
+.aic-root [hidden] {
+  display: none !important;
+}
+
 /* ------------------------------------------------------------------ root */
 .aic-root {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-width: 0;
   background: var(--aic-background);
   border: var(--aic-border-width) solid var(--aic-border);
   border-radius: var(--aic-radius);
+  box-shadow: var(--aic-shadow);
   font-family: var(--aic-font-family);
   font-size: var(--aic-font-size);
   color: var(--aic-text);
-  transition: border-color var(--aic-transition), box-shadow var(--aic-transition);
+  line-height: 1.6;
+  transition:
+    border-color var(--aic-transition),
+    box-shadow var(--aic-transition),
+    background-color var(--aic-transition);
   /* Auto-height ceiling: grows with content up to this, then scrolls inside.
      Modes retune it; values may use viewport units so the box never outgrows
      the space actually available. */
@@ -38,7 +50,7 @@
 
 .aic-root:focus-within {
   border-color: var(--aic-border-focus);
-  box-shadow: var(--aic-focus-ring);
+  box-shadow: var(--aic-focus-ring), var(--aic-shadow);
 }
 
 .aic-root[data-aic-disabled='true'] {
@@ -68,11 +80,13 @@
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.5;
+  line-height: 1.55;
+  caret-color: var(--aic-accent);
 }
 
-/* placeholder */
-.aic-input-host[data-aic-empty=''][data-placeholder]::before {
+/* placeholder — empty and unfocused. Clicking in (focus) clears it so the
+   caret stands alone; it returns as soon as the box is empty and blurred. */
+.aic-input-host[data-aic-empty=''][data-placeholder]:not(:focus)::before {
   content: attr(data-placeholder);
   color: var(--aic-text-placeholder);
   pointer-events: none;
@@ -80,17 +94,54 @@
 
 /* ------------------------------------------------------------- chips */
 .aic-chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
   background: var(--aic-chip-background);
   color: var(--aic-chip-text);
-  border-radius: 999px;
-  padding: 1px 8px;
+  border-radius: var(--aic-chip-radius);
   margin: 0 1px;
+  padding: 1px 6px;
+  font-size: 0.875em;
   font-weight: 500;
-  font-size: 0.95em;
   line-height: 1.5;
   white-space: nowrap;
-  user-select: all;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: baseline;
+  transition:
+    background-color var(--aic-transition),
+    transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow var(--aic-transition);
+}
+
+.aic-chip:hover {
+  background: var(--aic-surface-hover);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 8%);
+}
+
+.aic-chip:active {
+  transform: scale(0.93);
+  background: var(--aic-surface-hover);
+}
+
+/* semantic tints per node type */
+.aic-chip[data-aic-node='mention'] {
+  background: var(--aic-chip-mention-background);
+  color: var(--aic-chip-mention-text);
+}
+.aic-chip[data-aic-node='command'] {
+  background: var(--aic-chip-command-background);
+  color: var(--aic-chip-command-text);
+}
+.aic-chip[data-aic-node='variable'] {
+  background: var(--aic-chip-variable-background);
+  color: var(--aic-chip-variable-text);
+}
+.aic-chip[data-aic-node='custom'] {
+  background: var(--aic-chip-hashtag-background);
+  color: var(--aic-chip-hashtag-text);
 }
 
 /* ------------------------------------------------------- suggestion popup */
@@ -100,18 +151,30 @@
   list-style: none;
   box-sizing: border-box;
   margin: 0;
-  padding: 4px;
+  min-width: 230px;
+  max-height: 260px;
+  padding: 6px;
   background: var(--aic-background);
   border: var(--aic-border-width) solid var(--aic-border);
-  border-radius: var(--aic-radius-sm);
-  box-shadow: var(--aic-shadow);
+  border-radius: 12px;
+  box-shadow: var(--aic-shadow-raised);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  z-index: var(--aic-z-suggestions);
+  animation: aic-pop-in 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aic-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(2px);
+  }
 }
 
 .aic-suggestion {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   padding: 6px 10px;
   border-radius: var(--aic-radius-sm);
   cursor: pointer;
@@ -124,11 +187,46 @@
 
 .aic-suggestion-label {
   font-weight: 500;
+  font-size: 0.9em;
 }
 
 .aic-suggestion-description {
   color: var(--aic-text-muted);
-  font-size: 0.85em;
+  font-size: 0.8em;
+}
+
+/* Decorative keyboard-hints footer */
+.aic-suggestion-footer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 6px 10px 4px;
+  border-top: var(--aic-border-width) solid var(--aic-border);
+  color: var(--aic-text-placeholder);
+  font-size: 11.5px;
+  cursor: default;
+}
+
+.aic-suggestion-footer kbd {
+  font-family: var(--aic-font-family);
+  font-size: 10.5px;
+  line-height: 1;
+  padding: 2px 5px;
+  border: var(--aic-border-width) solid var(--aic-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--aic-surface-raised);
+  color: var(--aic-text-muted);
+}
+
+.aic-suggestion-footer span {
+  flex: 1;
+  text-align: center;
+}
+
+.aic-suggestion-footer span::before {
+  content: '·';
 }
 
 /* ------------------------------------------------------- attachments row */
@@ -136,7 +234,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: var(--aic-input-padding) var(--aic-input-padding) 0;
+  padding: var(--aic-input-padding) ;
 }
 
 .aic-attachment {
@@ -144,19 +242,29 @@
   align-items: center;
   gap: 6px;
   background: var(--aic-surface-raised);
-  border: var(--aic-border-width) solid var(--aic-border);
-  border-radius: var(--aic-radius-sm);
-  padding: 2px 8px;
-  font-size: 0.9em;
+  border: none;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 0.85em;
+  color: var(--aic-text);
 }
 
 .aic-attachment-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   background: none;
   color: var(--aic-text-muted);
   cursor: pointer;
-  padding: 0 2px;
-  font-size: 1em;
+  padding: 2px;
+  line-height: 0;
+  border-radius: 4px;
+}
+
+.aic-attachment-remove:hover {
+  color: var(--aic-text);
+  background: var(--aic-surface-hover);
 }
 
 /* ------------------------------------------------------------ toolbar */
@@ -164,16 +272,16 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
   min-height: var(--aic-toolbar-height);
-  padding: 6px 10px;
+  padding: 6px 12px 10px;
 }
 
-/* Copilot-style circular action buttons */
+/* Circular ghost icon buttons */
 .aic-toolbar button {
   min-width: 32px;
   height: 32px;
-  padding: 0 10px;
+  padding: 0;
   border: none;
   border-radius: 999px;
   background: transparent;
@@ -184,7 +292,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--aic-transition), color var(--aic-transition);
+  transition: background var(--aic-transition), color var(--aic-transition),
+    transform 100ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aic-toolbar button svg {
+  display: block;
+  pointer-events: none;
 }
 
 .aic-toolbar button:hover:not(:disabled) {
@@ -192,58 +306,164 @@
   color: var(--aic-text);
 }
 
+.aic-toolbar button:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
 .aic-toolbar button:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-/* The send button is the primary circular action (Copilot arrow) */
+.aic-toolbar button:focus-visible {
+  outline: 2px solid var(--aic-border-focus);
+  outline-offset: 1px;
+}
+
+/* Send — the primary action: solid circle, inverted in dark themes */
 .aic-toolbar button[data-aic-action='submit'] {
-  width: 32px;
-  min-width: 32px;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
   padding: 0;
   background: var(--aic-accent);
   color: var(--aic-accent-contrast);
-  font-size: 1.05em;
-  font-weight: 700;
+  box-shadow: 0 1px 2px rgb(15 118 110 / 18%);
 }
 
 .aic-toolbar button[data-aic-action='submit']:hover:not(:disabled) {
-  filter: brightness(1.08);
-  background: var(--aic-accent);
+  background: var(--aic-accent-hover);
+}
+
+.aic-toolbar button[data-aic-action='submit']:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.aic-toolbar button[data-aic-action='submit']:disabled {
+  background: var(--aic-accent-disabled);
+  color: var(--aic-accent-disabled-contrast);
+  opacity: 1;
+}
+
+/* Submit loading state */
+.aic-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: aic-spin 0.7s linear infinite;
+}
+
+@keyframes aic-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .aic-header,
 .aic-footer {
-  padding: 8px 14px;
+  padding: 8px 16px;
   color: var(--aic-text-muted);
   font-size: 0.9em;
+}
+.aic-header:is(:empty),
+.aic-footer:is(:empty) {
+  display: none;
 }
 
 /* ======================================================================
    MODES — visually distinct presets
    ====================================================================== */
 
-/* COMPACT — inline pill (Copilot review-box style): pill while single-line,
-   grows with wrapped/newline content (data-aic-multiline) into a rounded
-   box, then scrolls at the cap. Never clips text. */
+/* COMPACT — inline composer (Copilot review-box style): one line with
+   [chips][input …][send] inside the pill. Wrapped/newline content is
+   detected (data-aic-multiline) — the composer then morphs into a rounded
+   box where the input takes the whole area, anchored top, and the controls
+   move to their own row below. Never clips text. */
 .aic-root[data-aic-mode='compact'] {
   --aic-radius: 999px;
   --aic-input-padding: 6px 16px;
-  --aic-input-min-height: 40px;
+  --aic-input-min-height: 34px;
   --aic-input-max-height: 120px;
-  --aic-toolbar-height: 0px;
+  flex-direction: row;
+  align-items: center;
+  box-shadow: var(--aic-shadow);
 }
 
-/* Multiline content morphs the pill into a rounded box. */
-.aic-root[data-aic-mode='compact']:has(.aic-input-host[data-aic-multiline]) {
-  --aic-radius: 14px;
+.aic-root[data-aic-mode='compact'] .aic-body {
+  flex: 1;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
 }
 
-/* CHAT — auto-growing box (Copilot chat): starts small, grows to a cap */
+.aic-root[data-aic-mode='compact'] .aic-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.aic-root[data-aic-mode='compact'] .aic-attachments {
+  flex: none;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 0 0 0 10px;
+}
+
+.aic-root[data-aic-mode='compact'] .aic-toolbar {
+  flex: none;
+  min-height: 0;
+  gap: 0;
+  padding: 0 5px 0 0;
+}
+
+.aic-root[data-aic-mode='compact'] .aic-toolbar button {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
+.aic-root[data-aic-mode='compact'] .aic-toolbar button[data-aic-action='submit'] {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+}
+
+/* Multiline — the input takes over: full area, top-anchored; chips and
+   controls move to their own rows (chat-like layout). The multiline flag
+   is mirrored onto the root as data-aic-multiline (plain attribute —
+   :has()-based rules are still dropped by some engine versions). */
+.aic-root[data-aic-mode='compact'][data-aic-multiline] {
+  --aic-radius: 16px;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.aic-root[data-aic-mode='compact'][data-aic-multiline] .aic-body {
+  flex-direction: column;
+  align-items: stretch; /* reset the one-line `center` — input takes full width */
+}
+
+.aic-root[data-aic-mode='compact'][data-aic-multiline] .aic-input-host {
+  min-height: 60px;
+}
+
+.aic-root[data-aic-mode='compact'][data-aic-multiline] .aic-attachments {
+  flex-wrap: wrap;
+  padding: 10px 14px 0;
+}
+
+.aic-root[data-aic-mode='compact'][data-aic-multiline] .aic-toolbar {
+  padding: 4px 8px 8px;
+  justify-content: flex-end;
+}
+
+/* CHAT — auto-growing box: starts small, grows to a cap */
 .aic-root[data-aic-mode='chat'] {
   --aic-input-min-height: 28px;
-  --aic-radius: 14px;
+  --aic-radius: 16px;
   --aic-input-max-height: min(200px, 55vh);
 }
 
@@ -254,7 +474,7 @@
 }
 
 .aic-root[data-aic-mode='chat'] .aic-input-host {
-  padding: 12px 14px 2px;
+  padding: 14px 16px 2px;
 }
 
 .aic-root[data-aic-mode='chat'] .aic-toolbar {
@@ -264,7 +484,7 @@
 
 /* EXPANDED — a tall writing canvas with full chrome */
 .aic-root[data-aic-mode='expanded'] {
-  --aic-radius: 16px;
+  --aic-radius: 20px;
   --aic-input-min-height: 220px;
   --aic-input-max-height: 60vh;
 }

@@ -1,15 +1,15 @@
 /**
- * Undo/redo — snapshot-based history (ADR-0003). Prompt documents are small,
+ * Undo/redo — snapshot-based history (ADR-0003). Composer documents are small,
  * so storing immutable document references beats operational transforms in
  * simplicity and debuggability. Rapid consecutive user edits (typing) within
  * `mergeWindowMs` collapse into a single undo step.
  */
 
-import type { PromptDocument } from '../model/document';
+import type { AIComposerDocument } from '../model/document';
 import type { SelectionState } from '../model/selection';
 
 export interface HistorySnapshot {
-  document: PromptDocument;
+  document: AIComposerDocument;
   selection: SelectionState;
 }
 

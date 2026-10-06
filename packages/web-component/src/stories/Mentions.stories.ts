@@ -28,24 +28,20 @@ type Story = StoryObj<typeof meta>;
 
 export const MentionFlow: Story = {
   name: 'Interaction · type @, pick from popup',
-  render: () => ({
-    template: `<ai-composer-editor id="mention-demo" mode="chat" placeholder="Try typing @ad…"></ai-composer-editor>`,
-    effects: [
-      {
-        selector: '#mention-demo',
-        setup: (element: HTMLElement & { plugins?: unknown[] }) => {
-          element.plugins = [
-            mentionPlugin({
-              items: [
-                { id: 'u1', label: 'Ada Lovelace', description: 'Engineering' },
-                { id: 'u2', label: 'Grace Hopper', description: 'Engineering' },
-              ],
-            }),
-          ];
-        },
-      },
-    ],
-  }),
+  render: () => {
+    const element = document.createElement('ai-composer-editor') as HTMLElement & { plugins: unknown[] };
+    element.setAttribute('mode', 'chat');
+    element.setAttribute('placeholder', 'Try typing @ad…');
+    element.plugins = [
+      mentionPlugin({
+        items: [
+          { id: 'u1', label: 'Ada Lovelace', description: 'Engineering' },
+          { id: 'u2', label: 'Grace Hopper', description: 'Engineering' },
+        ],
+      }),
+    ];
+    return element;
+  },
   parameters: {
     docs: {
       source: {
@@ -68,24 +64,20 @@ el.plugins = [mentionPlugin({ items: people })];`,
 
 export const CommandMenu: Story = {
   name: 'Interaction · slash commands',
-  render: () => ({
-    template: `<ai-composer-editor id="command-demo" mode="chat" placeholder="Try typing /…"></ai-composer-editor>`,
-    effects: [
-      {
-        selector: '#command-demo',
-        setup: (element: HTMLElement & { plugins?: unknown[] }) => {
-          element.plugins = [
-            commandPlugin({
-              commands: [
-                { id: 'summarize', label: 'Summarize', description: 'Summarize the conversation' },
-                { id: 'translate', label: 'Translate', description: 'Translate the prompt' },
-              ],
-            }),
-          ];
-        },
-      },
-    ],
-  }),
+  render: () => {
+    const element = document.createElement('ai-composer-editor') as HTMLElement & { plugins: unknown[] };
+    element.setAttribute('mode', 'chat');
+    element.setAttribute('placeholder', 'Try typing /…');
+    element.plugins = [
+      commandPlugin({
+        commands: [
+          { id: 'summarize', label: 'Summarize', description: 'Summarize the conversation' },
+          { id: 'translate', label: 'Translate', description: 'Translate the draft' },
+        ],
+      }),
+    ];
+    return element;
+  },
   parameters: {
     docs: {
       source: {

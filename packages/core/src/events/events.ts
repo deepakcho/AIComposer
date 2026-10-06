@@ -4,8 +4,8 @@
  */
 
 import type { EventBus } from './event-bus';
-import type { PromptDocument } from '../model/document';
-import type { AttachmentNode, PromptNode } from '../model/nodes';
+import type { AIComposerDocument } from '../model/document';
+import type { AttachmentNode, AIComposerNode } from '../model/nodes';
 import type { SelectionState } from '../model/selection';
 import type { SuggestionItem } from '../state/state';
 
@@ -13,7 +13,7 @@ import type { SuggestionItem } from '../state/state';
 export type ChangeSource = 'init' | 'user' | 'api' | 'plugin' | 'undo' | 'redo';
 
 export interface ChangeEvent {
-  value: PromptDocument;
+  value: AIComposerDocument;
   source: ChangeSource;
 }
 
@@ -22,13 +22,13 @@ export interface FocusChangeEvent {
 }
 
 export interface BeforeSubmitEvent {
-  value: PromptDocument;
+  value: AIComposerDocument;
   defaultPrevented: boolean;
   preventDefault(): void;
 }
 
 export interface SubmitEvent {
-  value: PromptDocument;
+  value: AIComposerDocument;
 }
 
 export interface SelectionChangeEvent {
@@ -60,12 +60,12 @@ export interface SuggestionsChangeEvent {
 }
 
 export interface NodeInsertEvent {
-  node: PromptNode;
+  node: AIComposerNode;
   index: number;
 }
 
 export interface NodeRemoveEvent {
-  node: PromptNode;
+  node: AIComposerNode;
   index: number;
 }
 
@@ -92,7 +92,7 @@ export interface DestroyEvent {
   target: 'editor';
 }
 
-export type PromptEditorEventMap = {
+export type AIComposerEventMap = {
   /** Any value change, from any source. */
   change: ChangeEvent;
   /** Value change caused by user input (typing, paste, chip insert). */
@@ -115,6 +115,6 @@ export type PromptEditorEventMap = {
   destroy: DestroyEvent;
 };
 
-export type PromptEditorEventType = keyof PromptEditorEventMap & string;
+export type AIComposerEventType = keyof AIComposerEventMap & string;
 
-export type PromptEditorBus = EventBus<PromptEditorEventMap>;
+export type AIComposerBus = EventBus<AIComposerEventMap>;

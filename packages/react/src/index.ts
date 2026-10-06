@@ -2,29 +2,30 @@
  * @ai-composer/react — React adapter.
  *
  * ```tsx
- * import { PromptEditor } from '@ai-composer/react';
+ * import { AIComposer } from '@ai-composer/react';
  *
- * <PromptEditor mode="chat" placeholder="Ask anything…" />;
+ * <AIComposer mode="chat" placeholder="Ask anything…" />;
  * ```
  */
 
-export { PromptEditor, type PromptEditorProps } from './PromptEditor';
+export { AIComposer, type AIComposerProps } from './AIComposer';
 export {
-  PromptAttachments,
-  PromptBody,
-  PromptFooter,
-  PromptHeader,
-  PromptInput,
-  PromptSuggestions,
-  PromptToolbar,
+  AIComposerAttachments,
+  AIComposerBody,
+  AIComposerFooter,
+  AIComposerHeader,
+  AIComposerInput,
+  AIComposerSuggestions,
+  AIComposerToolbar,
 } from './slots';
+export { CloseIcon, RedoIcon, SendIcon, SpinnerIcon, UndoIcon } from './icons';
 export {
-  PromptEditorContext,
-  PromptEditorProvider,
-  usePromptCommand,
-  usePromptEditor,
-  usePromptEditorContext,
-  usePromptSelection,
-  usePromptState,
-  usePromptSuggestions,
+  AIComposerContext,
+  AIComposerProvider,
+  useAIComposer,
+  useAIComposerCommand,
+  useAIComposerContext,
+  useAIComposerSelection,
+  useAIComposerState,
+  useAIComposerSuggestions,
 } from './hooks';

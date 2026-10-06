@@ -1,14 +1,14 @@
 /**
- * Built-in commands (see docs/api/05-commands.md). Plugins extend this set via
+ * Built-in commands. Plugins extend this set via
  * their `commands` contribution.
  */
 
-import { PromptEditorError } from '../errors';
+import { AIComposerError } from '../errors';
 import type { Position } from '../model/selection';
-import type { PromptNode } from '../model/nodes';
+import type { AIComposerNode } from '../model/nodes';
 import type { SuggestionItem } from '../state/state';
-import type { PromptEditor } from '../editor';
-import type { PromptCommand } from './registry';
+import type { AIComposer } from '../editor';
+import type { AIComposerCommand } from './registry';
 
 export const BUILTIN_COMMANDS = {
   submit: 'submit',
@@ -30,7 +30,7 @@ export interface InsertTextPayload {
 }
 
 export interface InsertNodePayload {
-  node: PromptNode;
+  node: AIComposerNode;
   at?: Position;
 }
 
@@ -50,8 +50,8 @@ function payloadOf<T>(payload: unknown): T {
   return payload as T;
 }
 
-export function createBuiltinCommands(editor: PromptEditor): PromptCommand[] {
-  const commands: PromptCommand[] = [
+export function createBuiltinCommands(editor: AIComposer): AIComposerCommand[] {
+  const commands: AIComposerCommand[] = [
     {
       id: BUILTIN_COMMANDS.submit,
       label: 'Submit',
@@ -81,7 +81,7 @@ export function createBuiltinCommands(editor: PromptEditor): PromptCommand[] {
       label: 'Insert text',
       execute: (_context) => {
         const payload = payloadOf<InsertTextPayload | string>(_context.payload);
-        if (!payload) throw new PromptEditorError('UNKNOWN_COMMAND', 'insertText requires a payload');
+        if (!payload) throw new AIComposerError('UNKNOWN_COMMAND', 'insertText requires a payload');
         if (typeof payload === 'string') {
           editor.insertText(payload);
         } else {
@@ -94,7 +94,7 @@ export function createBuiltinCommands(editor: PromptEditor): PromptCommand[] {
       label: 'Insert node',
       execute: (_context) => {
         const payload = payloadOf<InsertNodePayload>(_context.payload);
-        if (!payload?.node) throw new PromptEditorError('UNKNOWN_COMMAND', 'insertNode requires { node }');
+        if (!payload?.node) throw new AIComposerError('UNKNOWN_COMMAND', 'insertNode requires { node }');
         editor.insertNode(payload.node, { at: payload.at });
       },
     },
@@ -114,7 +114,7 @@ export function createBuiltinCommands(editor: PromptEditor): PromptCommand[] {
       execute: (_context) => {
         const payload = payloadOf<OpenTriggerPayload | string>(_context.payload);
         const triggerId = typeof payload === 'string' ? payload : payload?.triggerId;
-        if (!triggerId) throw new PromptEditorError('UNKNOWN_TRIGGER', 'openTrigger requires a triggerId');
+        if (!triggerId) throw new AIComposerError('UNKNOWN_TRIGGER', 'openTrigger requires a triggerId');
         editor.openTrigger(triggerId);
       },
     },
@@ -124,7 +124,7 @@ export function createBuiltinCommands(editor: PromptEditor): PromptCommand[] {
       execute: (_context) => {
         const payload = payloadOf<RemoveNodePayload | string>(_context.payload);
         const key = typeof payload === 'string' ? payload : payload?.key;
-        if (!key) throw new PromptEditorError('UNKNOWN_COMMAND', 'removeNode requires a key');
+        if (!key) throw new AIComposerError('UNKNOWN_COMMAND', 'removeNode requires a key');
         editor.removeNode(key);
       },
     },

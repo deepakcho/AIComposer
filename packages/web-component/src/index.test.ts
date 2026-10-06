@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPromptEditor } from '@ai-composer/core';
+import { createAIComposer } from '@ai-composer/core';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
-import { definePromptEditorContractSuite } from '@ai-composer/testing';
+import { defineAIComposerContractSuite } from '@ai-composer/testing';
 import { defineAiComposerEditor } from './index';
 
 defineAiComposerEditor();
@@ -38,14 +38,14 @@ describe('<ai-composer-editor>', () => {
     const element = await attachUpgraded(
       '<ai-composer-editor placeholder="Hi" disabled></ai-composer-editor>',
     );
-    const editor = (element as unknown as { editor: ReturnType<typeof createPromptEditor> }).editor;
+    const editor = (element as unknown as { editor: ReturnType<typeof createAIComposer> }).editor;
     expect(editor.getState().placeholder).toBe('Hi');
     expect(editor.getState().disabled).toBe(true);
   });
 
   it('typing syncs and aic-change/aic-submit events fire', async () => {
     const element = await attachUpgraded('<ai-composer-editor></ai-composer-editor>');
-    const editor = (element as unknown as { editor: ReturnType<typeof createPromptEditor> }).editor;
+    const editor = (element as unknown as { editor: ReturnType<typeof createAIComposer> }).editor;
     const onChange = vi.fn();
     element.addEventListener('aic-change', onChange);
 
@@ -69,7 +69,7 @@ describe('<ai-composer-editor>', () => {
     ];
     hostDiv.appendChild(element); // triggers connectedCallback
 
-    const editor = (element as unknown as { editor: ReturnType<typeof createPromptEditor> }).editor;
+    const editor = (element as unknown as { editor: ReturnType<typeof createAIComposer> }).editor;
     editor.insertText('@ad');
     await vi.waitFor(() => expect(editor.getState().suggestions.length).toBe(1));
     await editor.acceptSuggestion();
@@ -77,6 +77,6 @@ describe('<ai-composer-editor>', () => {
   });
 });
 
-definePromptEditorContractSuite((options) => createPromptEditor(options), {
-  title: 'PromptEditor contract (web-component package, headless reference)',
+defineAIComposerContractSuite((options) => createAIComposer(options), {
+  title: 'AIComposer contract (web-component package, headless reference)',
 });

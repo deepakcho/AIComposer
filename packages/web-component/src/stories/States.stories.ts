@@ -3,6 +3,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { createAIComposer } from '@ai-composer/core';
 import { defineAiComposerEditor } from '../index';
 
 defineAiComposerEditor();
@@ -23,17 +24,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Disabled: Story = {
-  render: () => ({
-    template: `<ai-composer-editor id="disabled-demo" mode="chat" placeholder="Disabled" disabled></ai-composer-editor>`,
-    effects: [
-      {
-        selector: '#disabled-demo',
-        setup: (element: HTMLElement & { value: string }) => {
-          element.value = 'You cannot edit me';
-        },
-      },
-    ],
-  }),
+  render: () => {
+    const element = document.createElement('ai-composer-editor') as HTMLElement & {
+      editor: ReturnType<typeof createAIComposer>;
+    };
+    element.setAttribute('mode', 'chat');
+    element.setAttribute('placeholder', 'Disabled');
+    element.setAttribute('disabled', '');
+    element.editor = createAIComposer({ value: 'You cannot edit me', disabled: true });
+    return element;
+  },
   parameters: {
     docs: {
       source: { code: `<ai-composer-editor mode="chat" disabled></ai-composer-editor>` },
@@ -42,9 +42,13 @@ export const Disabled: Story = {
 };
 
 export const Readonly: Story = {
-  render: () => ({
-    template: `<ai-composer-editor mode="chat" placeholder="Readonly" readonly></ai-composer-editor>`,
-  }),
+  render: () => {
+    const element = document.createElement('ai-composer-editor');
+    element.setAttribute('mode', 'chat');
+    element.setAttribute('placeholder', 'Readonly');
+    element.setAttribute('readonly', '');
+    return element;
+  },
   parameters: {
     docs: {
       source: { code: `<ai-composer-editor mode="chat" readonly></ai-composer-editor>` },
@@ -53,13 +57,15 @@ export const Readonly: Story = {
 };
 
 export const DarkTheme: Story = {
-  render: () => ({
-    template: `
+  render: () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
       <div data-aic-theme="dark" style="background:#0d0e12;padding:24px;border-radius:12px">
         <ai-composer-editor mode="chat" placeholder="Dark tokens via data-aic-theme"></ai-composer-editor>
       </div>
-    `,
-  }),
+    `;
+    return root;
+  },
   parameters: {
     backgrounds: { default: 'dark' },
     docs: {

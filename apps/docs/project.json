@@ -1,0 +1,22 @@
+{
+  "name": "docs",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/docs/src",
+  "projectType": "application",
+  "tags": ["scope:app", "type:app", "framework:react"],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite --port 4300", "cwd": "apps/docs" }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite build", "cwd": "apps/docs" },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": { "command": "vite preview", "cwd": "apps/docs" }
+    }
+  }
+}

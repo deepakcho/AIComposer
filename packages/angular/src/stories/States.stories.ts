@@ -23,11 +23,11 @@ type Story = StoryObj;
 export const Disabled: Story = {
   render: () => ({
     props: { editor: demoEditor({ mode: 'chat', value: 'You cannot edit me', disabled: true }) },
-    template: `<aic-prompt-editor [editor]="editor" mode="chat" disabled></aic-prompt-editor>`,
+    template: `<aic-ai-composer [editor]="editor" mode="chat" disabled></aic-ai-composer>`,
   }),
   parameters: {
     docs: {
-      source: { code: `<aic-prompt-editor mode="chat" disabled></aic-prompt-editor>` },
+      source: { code: `<aic-ai-composer mode="chat" disabled></aic-ai-composer>` },
     },
   },
 };
@@ -35,11 +35,11 @@ export const Disabled: Story = {
 export const Readonly: Story = {
   render: () => ({
     props: { editor: demoEditor({ mode: 'chat', value: 'Read-only but submittable via API', readonly: true }) },
-    template: `<aic-prompt-editor [editor]="editor" mode="chat" readonly></aic-prompt-editor>`,
+    template: `<aic-ai-composer [editor]="editor" mode="chat" readonly></aic-ai-composer>`,
   }),
   parameters: {
     docs: {
-      source: { code: `<aic-prompt-editor mode="chat" readonly></aic-prompt-editor>` },
+      source: { code: `<aic-ai-composer mode="chat" readonly></aic-ai-composer>` },
     },
   },
 };
@@ -49,7 +49,7 @@ export const DarkTheme: Story = {
     props: { editor: demoEditor({ mode: 'chat', placeholder: 'Dark tokens via data-aic-theme' }) },
     template: `
       <div data-aic-theme="dark" style="background:#0d0e12;padding:24px;border-radius:12px">
-        <aic-prompt-editor [editor]="editor" mode="chat"></aic-prompt-editor>
+        <aic-ai-composer [editor]="editor" mode="chat"></aic-ai-composer>
       </div>
     `,
   }),
@@ -58,7 +58,7 @@ export const DarkTheme: Story = {
     docs: {
       source: {
         code: `<div data-aic-theme="dark">
-  <aic-prompt-editor mode="chat"></aic-prompt-editor>
+  <aic-ai-composer mode="chat"></aic-ai-composer>
 </div>`,
       },
     },

@@ -1,7 +1,7 @@
 # AI Composer
 
-A **framework-agnostic, pluggable AI prompt composer** — one engine, rendered by
-React, Angular, Vue, Svelte, Web Components or plain JavaScript.
+A **framework-agnostic, pluggable AI composer** — one engine, rendered by
+React, Angular, Vue, Web Components or plain JavaScript.
 
 > Build the engine once, let frameworks render it many ways, and let
 > applications own the final HTML experience.
@@ -16,7 +16,6 @@ React, Angular, Vue, Svelte, Web Components or plain JavaScript.
 | `@ai-composer/angular` | Standalone components, signals, ControlValueAccessor |
 | `@ai-composer/vue` | Composition-API components, `v-model` |
 | `@ai-composer/web-component` | Universal `<ai-composer-editor>` custom element |
-| `@ai-composer/ui` | Optional ready-made UI |
 | `@ai-composer/themes` | Design tokens + default/dark/compact themes |
 | `@ai-composer/plugin-mention` | `@mention` trigger plugin |
 | `@ai-composer/plugin-command` | `/slash` command plugin |
@@ -25,11 +24,11 @@ React, Angular, Vue, Svelte, Web Components or plain JavaScript.
 ## Quick start
 
 ```ts
-import { createPromptEditor } from '@ai-composer/core';
+import { createAIComposer } from '@ai-composer/core';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
 import { commandPlugin } from '@ai-composer/plugin-command';
 
-const editor = createPromptEditor({
+const editor = createAIComposer({
   plugins: [
     mentionPlugin({ trigger: '@', items: [{ id: '1', label: 'Ada Lovelace' }] }),
     commandPlugin({ trigger: '/' }),
@@ -39,9 +38,9 @@ const editor = createPromptEditor({
 
 ```tsx
 // React
-import { PromptEditor } from '@ai-composer/react';
+import { AIComposer } from '@ai-composer/react';
 
-<PromptEditor editor={editor} mode="chat" placeholder="Ask anything..." />;
+<AIComposer editor={editor} mode="chat" placeholder="Ask anything..." />;
 ```
 
 ```html
@@ -53,12 +52,12 @@ import { PromptEditor } from '@ai-composer/react';
 
 ```
 ai-composer/
-├── apps/          playgrounds (vanilla, react, vue, angular) + docs
-├── packages/      core, dom, adapters, ui, themes, testing
-├── plugins/       mention, command, …
-├── examples/      runnable per-API and per-framework examples
-├── docs/          action plans, ADRs, API reference, framework guides
-└── tools/         (reserved) generators & scripts
+├── apps/
+│   ├── docs/              documentation site: API reference + live demos on one page
+│   └── playground-*/      dev playgrounds (vanilla, react, vue, angular)
+├── packages/              core, dom, adapters (react/vue/angular/web-component), themes, testing
+├── plugins/               mention, command
+└── docs/adr/              architecture decision records
 ```
 
 ## Commands
@@ -66,12 +65,13 @@ ai-composer/
 Nx manages everything:
 
 ```bash
-pnpm build                # build all packages + playgrounds
+pnpm build                # build all packages + apps
 pnpm test                 # unit + contract tests (all packages)
 pnpm lint                 # eslint incl. module boundaries
 pnpm typecheck
 pnpm affected:test        # run only what a PR touches
 
+pnpm dev:docs             # documentation site (localhost:4300)
 pnpm dev:react            # playgrounds: dev:vanilla | dev:vue | dev:angular
 
 pnpm storybook:react      # Storybook per adapter: 6006
@@ -79,17 +79,20 @@ pnpm storybook:vue        # 6007
 pnpm storybook:angular    # 6008
 pnpm storybook:wc         # 6009 (web components + vanilla JS stories)
 pnpm storybook:build      # static bundles for all four → dist/storybook/*
+pnpm docs:build           # static docs bundle → apps/docs/dist (host anywhere)
 ```
 
 ## Documentation
 
-- [Action plan](docs/action-plan/00-master-plan.md) — phases, tasks, definition of done
-- [Design principles](docs/action-plan/design-principles.md)
-- [API reference](docs/api/) — every subsystem with examples
-- [Framework guides](docs/frameworks/) — React, Angular, Vue, Web Component, Vanilla
-- [ADRs](docs/adr/) — architecture decision records
+**Live demo and docs:** [deepakcho.github.io/AIComposer](https://deepakcho.github.io/AIComposer/)
 
-## Status
+Run the docs site — API reference, live demos and template showcases on a
+single page:
 
-Phase 1–2 complete (foundation + core engine), Phase 3+ in progress — see the
-[status board](docs/action-plan/00-master-plan.md#status-board).
+```bash
+pnpm dev:docs
+```
+
+The `main` branch deploys the docs and embedded Storybooks to GitHub Pages.
+
+Architecture decisions live in [docs/adr](docs/adr).

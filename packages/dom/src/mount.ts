@@ -5,16 +5,17 @@
  * undo history survive a compact ↔ chat ↔ expanded switch.
  */
 
-import type { PromptEditor, SuggestionItem, Unsubscribe } from '@ai-composer/core';
+import type { AIComposer, SuggestionItem, Unsubscribe } from '@ai-composer/core';
 import { createEditableSurface, type EditableSurface } from './surface';
 import { createSuggestionList } from './suggestions';
-import { templateForMode, SLOT_ATTRIBUTE, type PromptDomTemplate } from './template';
+import { createIcon, createSpinner } from './icons';
+import { templateForMode, SLOT_ATTRIBUTE, type AIComposerDomTemplate } from './template';
 
 export interface MountOptions {
   /** Initial mode preset; can be changed later via `editor.setMode()`. */
   mode?: string;
   /** Replace the structural preset (static — not mode-switched). */
-  template?: PromptDomTemplate;
+  template?: AIComposerDomTemplate;
   /**
    * Force slots on regardless of the mode preset (projection-friendly):
    * attachments/header/toolbar/footer stay mountable in compact too.
@@ -28,7 +29,7 @@ export interface MountOptions {
   maxHeight?: string;
   /** Custom suggestion item renderer. */
   renderSuggestionItem?: (item: SuggestionItem, active: boolean) => HTMLElement;
-  labels?: { submit?: string; undo?: string; redo?: string; removeAttachment?: string };
+  labels?: { removeAttachment?: string };
 }
 
 export interface MountedEditor {
@@ -40,15 +41,12 @@ export interface MountedEditor {
   destroy(): void;
 }
 
-export function mountPromptEditor(
+export function mountAIComposer(
   container: HTMLElement,
-  editor: PromptEditor,
+  editor: AIComposer,
   options: MountOptions = {},
 ): MountedEditor {
   const labels = {
-    submit: options.labels?.submit ?? '↑',
-    undo: options.labels?.undo ?? '↺',
-    redo: options.labels?.redo ?? '↻',
     removeAttachment: options.labels?.removeAttachment ?? 'Remove',
   };
 
@@ -117,15 +115,15 @@ export function mountPromptEditor(
         button.className = `aic-toolbar-${action}`;
         button.setAttribute('data-aic-action', action);
         if (action === 'submit') {
-          button.textContent = labels.submit;
+          button.appendChild(createIcon('send'));
           button.setAttribute('aria-label', 'Send');
           button.addEventListener('click', () => void editor.executeCommand('submit'));
         } else if (action === 'undo') {
-          button.textContent = labels.undo;
+          button.appendChild(createIcon('undo'));
           button.setAttribute('aria-label', 'Undo');
           button.addEventListener('click', () => void editor.executeCommand('undo'));
         } else {
-          button.textContent = labels.redo;
+          button.appendChild(createIcon('redo'));
           button.setAttribute('aria-label', 'Redo');
           button.addEventListener('click', () => void editor.executeCommand('redo'));
         }
@@ -137,7 +135,7 @@ export function mountPromptEditor(
   // -- state-driven UI -------------------------------------------------------
 
   let currentMode = '';
-  const syncUi = (state: ReturnType<PromptEditor['getState']>): void => {
+  const syncUi = (state: ReturnType<AIComposer['getState']>): void => {
     if (state.mode !== currentMode) {
       currentMode = state.mode;
       applyTemplate(state.mode);
@@ -150,7 +148,15 @@ export function mountPromptEditor(
         (!state.empty || state.attachments.length > 0);
       submit.disabled = !canSubmit;
       submit.setAttribute('aria-disabled', String(!canSubmit));
-      submit.textContent = state.submitting ? '…' : labels.submit;
+      if (state.submitting) {
+        if (!submit.querySelector('.aic-spinner')) {
+          submit.textContent = '';
+          submit.appendChild(createSpinner());
+        }
+      } else if (!submit.querySelector('svg')) {
+        submit.textContent = '';
+        submit.appendChild(createIcon('send'));
+      }
     }
     const undo = toolbar.querySelector<HTMLButtonElement>('[data-aic-action="undo"]');
     if (undo) undo.disabled = !state.canUndo;
@@ -171,7 +177,7 @@ export function mountPromptEditor(
       remove.type = 'button';
       remove.className = 'aic-attachment-remove';
       remove.setAttribute('aria-label', `${labels.removeAttachment} ${attachment.name}`);
-      remove.textContent = '×';
+      remove.appendChild(createIcon('close', 12));
       remove.addEventListener('click', () => editor.removeNode(attachment.key));
       item.append(name, remove);
       attachments.appendChild(item);

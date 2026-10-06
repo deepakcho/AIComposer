@@ -1,21 +1,21 @@
 /** Factory + version. */
 
-import { PromptEditorImpl, type PromptEditor } from './editor';
-import type { PromptEditorOptions } from './types';
+import { AIComposerImpl, type AIComposer } from './editor';
+import type { AIComposerOptions } from './types';
 
 /**
- * Create a framework-independent prompt editor.
+ * Create a framework-independent AI Composer editor instance.
  *
  * @example
  * ```ts
- * const editor = createPromptEditor({
+ * const editor = createAIComposer({
  *   placeholder: 'Ask anything…',
  *   plugins: [mentionPlugin({ trigger: '@', items })],
  * });
  * ```
  */
-export function createPromptEditor(options: PromptEditorOptions = {}): PromptEditor {
-  return new PromptEditorImpl(options);
+export function createAIComposer(options: AIComposerOptions = {}): AIComposer {
+  return new AIComposerImpl(options);
 }
 
 export const CORE_VERSION = '0.1.0';

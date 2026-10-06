@@ -10,7 +10,7 @@ import type {
   CommandNode,
   CustomNode,
   MentionNode,
-  PromptNode,
+  AIComposerNode,
   TextNode,
   VariableNode,
 } from '../model/nodes';
@@ -23,13 +23,13 @@ export interface NodeDefinition {
   /** Atomic nodes are indivisible units with model length 1. */
   isAtomic: boolean;
   /** Plain-text projection used by the `text` serializer and a11y announcements. */
-  toText?(node: PromptNode): string;
+  toText?(node: AIComposerNode): string;
   /** Markdown projection. */
-  toMarkdown?(node: PromptNode): string;
+  toMarkdown?(node: AIComposerNode): string;
   /** Safe HTML projection — must escape user content (used for copy/export, never for trusting input). */
-  toHtml?(node: PromptNode): string;
+  toHtml?(node: AIComposerNode): string;
   /** Short chip label for DOM rendering. */
-  toDisplay?(node: PromptNode): string;
+  toDisplay?(node: AIComposerNode): string;
 }
 
 export interface NodeRegistry {
@@ -68,7 +68,7 @@ export function createNodeRegistry(): NodeRegistry {
 // Built-in definitions
 // ---------------------------------------------------------------------------
 
-const as = <T extends PromptNode>(node: PromptNode): T => node as T;
+const as = <T extends AIComposerNode>(node: AIComposerNode): T => node as T;
 
 export const TEXT_NODE_DEFINITION: NodeDefinition = {
   type: 'text',

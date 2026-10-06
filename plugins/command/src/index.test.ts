@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPromptEditor, createPosition, createSelection } from '@ai-composer/core';
+import { createAIComposer, createPosition, createSelection } from '@ai-composer/core';
 import { commandPlugin } from './index';
 
-function type(editor: ReturnType<typeof createPromptEditor>, text: string): void {
+function type(editor: ReturnType<typeof createAIComposer>, text: string): void {
   const current = editor.serialize('text') as string;
   editor.applyViewUpdate({ nodes: [{ type: 'text', key: 't', text: current + text }] });
   editor.setSelection(createSelection(createPosition(0, (current + text).length)));
@@ -10,7 +10,7 @@ function type(editor: ReturnType<typeof createPromptEditor>, text: string): void
 
 describe('commandPlugin', () => {
   it('inserts a command node for commands without run()', async () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [
         commandPlugin({
           commands: [
@@ -32,7 +32,7 @@ describe('commandPlugin', () => {
 
   it('executes run() immediately and removes the trigger run', async () => {
     const run = vi.fn();
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [
         commandPlugin({
           commands: [{ id: 'clear', label: 'Clear all', run }],
@@ -49,7 +49,7 @@ describe('commandPlugin', () => {
   });
 
   it('matches on id as well as label', async () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [
         commandPlugin({
           commands: [{ id: 'translate', label: 'Translate to French' }],

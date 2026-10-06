@@ -16,5 +16,5 @@ export {
   createTextSerializer,
   documentToText,
   nodeToText,
-  type AiPromptPayload,
+  type AIComposerPayload,
 } from './builtins';

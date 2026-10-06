@@ -9,7 +9,7 @@ import {
   createSelection,
   fromGlobalOffset,
   globalRange,
-  type PromptDocument,
+  type AIComposerDocument,
   type SelectionState,
 } from '@ai-composer/core';
 
@@ -86,7 +86,7 @@ function domPointAtGlobal(host: HTMLElement, globalOffset: number): DomPoint {
 /** Read the DOM selection inside `host` as a model selection. */
 export function domSelectionToModel(
   host: HTMLElement,
-  document_: PromptDocument,
+  document_: AIComposerDocument,
 ): SelectionState | null {
   const selection = host.ownerDocument.getSelection();
   if (!selection || selection.rangeCount === 0) return null;
@@ -109,7 +109,7 @@ export function domSelectionToModel(
 /** Apply a model selection to the DOM (caret restore after renders). */
 export function applyModelSelection(
   host: HTMLElement,
-  document_: PromptDocument,
+  document_: AIComposerDocument,
   selection: SelectionState,
 ): void {
   const ownerDocument = host.ownerDocument;
@@ -132,7 +132,7 @@ export function applyModelSelection(
 }
 
 /** Caret to the end of the host content. */
-export function caretToEnd(host: HTMLElement, document_: PromptDocument): SelectionState {
+export function caretToEnd(host: HTMLElement, document_: AIComposerDocument): SelectionState {
   const length = document_.nodes.reduce(
     (sum, node) => sum + (node.type === 'text' ? node.text.length : 1),
     0,

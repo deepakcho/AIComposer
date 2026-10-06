@@ -5,43 +5,62 @@
  * layer:
  *
  *   core tokens → default theme → mode theme → app theme → component overrides
+ *
+ * Palette: neutral zinc scale, near-black primary action — the editor reads
+ * calm and framework-native instead of arriving with a brand color.
  */
 
 :root {
   /* surface */
   --aic-background: #ffffff;
-  --aic-surface-raised: #f7f7f8;
-  --aic-border: #d9d9de;
-  --aic-border-focus: #6366f1;
+  --aic-surface-raised: #f4f4f5;
+  --aic-surface-hover: #e4e4e7;
+  --aic-border: #e4e4e7;
+  --aic-border-focus: #0f766e;
 
   /* text */
-  --aic-text: #1f2328;
-  --aic-text-muted: #6b7280;
-  --aic-text-placeholder: #9ca3af;
+  --aic-text: #18181b;
+  --aic-text-muted: #71717a;
+  --aic-text-placeholder: #a1a1aa;
 
-  /* accent */
-  --aic-accent: #6366f1;
-  --aic-accent-contrast: #ffffff;
-  --aic-chip-background: #eef2ff;
-  --aic-chip-text: #4338ca;
+  /* primary action (send) */
+  --aic-accent: #0f766e;
+  --aic-accent-hover: #115e59;
+  --aic-accent-contrast: #f0fdfa;
+  --aic-accent-disabled: #dce8e5;
+  --aic-accent-disabled-contrast: #647b76;
+
+  /* chips — neutral base, semantic tint per node type */
+  --aic-chip-background: #f4f4f5;
+  --aic-chip-text: #3f3f46;
+  --aic-chip-radius: 4px;
+  --aic-chip-mention-background: #e8f1ff;
+  --aic-chip-mention-text: #1d5fd6;
+  --aic-chip-command-background: #f3ecfe;
+  --aic-chip-command-text: #7a3af0;
+  --aic-chip-variable-background: #fdf3d5;
+  --aic-chip-variable-text: #96660a;
+  --aic-chip-hashtag-background: #e5f8ed;
+  --aic-chip-hashtag-text: #177245;
 
   /* geometry */
   --aic-radius: 12px;
   --aic-radius-sm: 8px;
   --aic-border-width: 1px;
-  --aic-input-padding: 12px;
-  --aic-input-min-height: 44px;
+  --aic-input-padding: 12px 16px;
+  --aic-input-min-height: 52px;
   --aic-input-max-height: 40vh;
-  --aic-toolbar-height: 40px;
+  --aic-toolbar-height: 44px;
   --aic-font-size: 15px;
   --aic-font-family: inherit;
 
   /* effects */
-  --aic-shadow: 0 4px 16px rgb(0 0 0 / 12%);
-  --aic-focus-ring: 0 0 0 2px rgb(99 102 241 / 35%);
+  --aic-shadow: 0 1px 2px rgb(24 24 27 / 4%), 0 5px 16px rgb(24 24 27 / 7%);
+  --aic-shadow-raised: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+  --aic-focus-ring: 0 0 0 3px rgb(15 118 110 / 16%);
 
   /* motion */
-  --aic-transition: 120ms ease;
+  --aic-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* z-index scale */
   --aic-z-suggestions: 30;

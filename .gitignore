@@ -11,3 +11,6 @@ coverage
 
 # Angular build cache
 .angular/
+
+# embedded storybook builds (copied at docs build time)
+apps/docs/public/storybook

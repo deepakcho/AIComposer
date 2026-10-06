@@ -1,18 +1,28 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPromptEditor } from './factory';
+import { createAIComposer } from './factory';
 import { createMentionNode, createTextNode } from './model/nodes';
 import { createPosition, createSelection, toGlobalOffset } from './model/selection';
 import { ErrorCode } from './errors';
 
-describe('PromptEditor — value API', () => {
+describe('AIComposer aliases', () => {
+  it('exposes the new AIComposer factory aliases', () => {
+    const aiComposer = createAIComposer();
+    const legacyAIComposer = createAIComposer();
+
+    expect(aiComposer.getState().empty).toBe(true);
+    expect(legacyAIComposer.getState().empty).toBe(true);
+  });
+});
+
+describe('AIComposer — value API', () => {
   it('starts empty', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     expect(editor.getValue().nodes).toEqual([]);
     expect(editor.getState().empty).toBe(true);
   });
 
   it('setValue accepts string, nodes and documents', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     editor.setValue('hello');
     expect(editor.serialize('text')).toBe('hello');
 
@@ -24,7 +34,7 @@ describe('PromptEditor — value API', () => {
   });
 
   it('insertText appends and moves the caret', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     editor.insertText('hello');
     editor.insertText(' world');
     expect(editor.serialize('text')).toBe('hello world');
@@ -33,7 +43,7 @@ describe('PromptEditor — value API', () => {
   });
 
   it('insertText replaces an active selection', () => {
-    const editor = createPromptEditor({ value: 'hello world' });
+    const editor = createAIComposer({ value: 'hello world' });
     editor.setSelection(
       createSelection(createPosition(0, 0), createPosition(0, 5)),
     );
@@ -42,7 +52,7 @@ describe('PromptEditor — value API', () => {
   });
 
   it('insertNode adds an atomic node with trailing space', () => {
-    const editor = createPromptEditor({ value: 'hi ' });
+    const editor = createAIComposer({ value: 'hi ' });
     editor.insertNode(createMentionNode({ id: 'u1', label: 'Ada' }));
     expect(editor.serialize('text')).toBe('hi @Ada ');
     // caret after the trailing space ('hi '=3 + chip=1 + space=1)
@@ -50,7 +60,7 @@ describe('PromptEditor — value API', () => {
   });
 
   it('removeNode deletes by key and reports the event', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const onRemove = vi.fn();
     editor.on('nodeRemove', onRemove);
 
@@ -63,15 +73,15 @@ describe('PromptEditor — value API', () => {
   });
 
   it('clear empties the document', () => {
-    const editor = createPromptEditor({ value: 'x' });
+    const editor = createAIComposer({ value: 'x' });
     editor.clear();
     expect(editor.getState().empty).toBe(true);
   });
 });
 
-describe('PromptEditor — events and state', () => {
+describe('AIComposer — events and state', () => {
   it('emits change/input and notifies subscribers', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const change = vi.fn();
     const input = vi.fn();
     const stateListener = vi.fn();
@@ -89,7 +99,7 @@ describe('PromptEditor — events and state', () => {
   });
 
   it('applyViewUpdate is treated as user input', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const input = vi.fn();
     editor.on('input', input);
     editor.applyViewUpdate({ nodes: [createTextNode('typed')] });
@@ -98,7 +108,7 @@ describe('PromptEditor — events and state', () => {
   });
 
   it('selection changes are clamped and emitted', () => {
-    const editor = createPromptEditor({ value: 'abc' });
+    const editor = createAIComposer({ value: 'abc' });
     const onChange = vi.fn();
     editor.on('selectionChange', onChange);
     editor.setSelection(createSelection(createPosition(0, 2)));
@@ -110,7 +120,7 @@ describe('PromptEditor — events and state', () => {
   });
 
   it('focus/blur toggle focused state and emit events', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const focus = vi.fn();
     const blur = vi.fn();
     editor.on('focus', focus);
@@ -122,10 +132,10 @@ describe('PromptEditor — events and state', () => {
   });
 });
 
-describe('PromptEditor — submit', () => {
+describe('AIComposer — submit', () => {
   it('runs the async handler and emits submit', async () => {
     const onSubmit = vi.fn(async () => undefined);
-    const editor = createPromptEditor({ value: 'question', submit: { onSubmit } });
+    const editor = createAIComposer({ value: 'question', submit: { onSubmit } });
     const beforeSubmit = vi.fn();
     const submitted = vi.fn();
     editor.on('beforeSubmit', beforeSubmit);
@@ -141,7 +151,7 @@ describe('PromptEditor — submit', () => {
 
   it('beforeSubmit can cancel', async () => {
     const onSubmit = vi.fn();
-    const editor = createPromptEditor({ value: 'x', submit: { onSubmit } });
+    const editor = createAIComposer({ value: 'x', submit: { onSubmit } });
     editor.on('beforeSubmit', (event) => event.preventDefault());
     await editor.submit();
     expect(onSubmit).not.toHaveBeenCalled();
@@ -149,17 +159,17 @@ describe('PromptEditor — submit', () => {
 
   it('skips empty documents unless allowEmpty', async () => {
     const onSubmit = vi.fn();
-    const strict = createPromptEditor({ submit: { onSubmit } });
+    const strict = createAIComposer({ submit: { onSubmit } });
     await strict.submit();
     expect(onSubmit).not.toHaveBeenCalled();
 
-    const lax = createPromptEditor({ submit: { onSubmit, allowEmpty: true } });
+    const lax = createAIComposer({ submit: { onSubmit, allowEmpty: true } });
     await lax.submit();
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
   it('clearOnSubmit resets the document', async () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       value: 'hello',
       submit: { clearOnSubmit: true },
     });
@@ -169,15 +179,15 @@ describe('PromptEditor — submit', () => {
 
   it('disabled editors do not submit', async () => {
     const onSubmit = vi.fn();
-    const editor = createPromptEditor({ value: 'x', disabled: true, submit: { onSubmit } });
+    const editor = createAIComposer({ value: 'x', disabled: true, submit: { onSubmit } });
     await editor.submit();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });
 
-describe('PromptEditor — history', () => {
+describe('AIComposer — history', () => {
   it('undoes and redoes setValue steps', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     editor.setValue('one');
     editor.setValue('two');
     editor.undo();
@@ -191,7 +201,7 @@ describe('PromptEditor — history', () => {
   });
 
   it('a transaction is a single undo step', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     editor.transaction(() => {
       editor.insertText('Hello');
       editor.insertNode(createMentionNode({ id: 'u1', label: 'Ada' }));
@@ -203,7 +213,7 @@ describe('PromptEditor — history', () => {
   });
 
   it('rapid user input merges into one undo step', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const type = (text: string) =>
       editor.applyViewUpdate({ nodes: [createTextNode(editor.serialize('text') + text)] });
 
@@ -216,7 +226,7 @@ describe('PromptEditor — history', () => {
   });
 
   it('tracks canUndo/canRedo in state', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     expect(editor.getState().canUndo).toBe(false);
     editor.setValue('x');
     expect(editor.getState().canUndo).toBe(true);
@@ -227,7 +237,7 @@ describe('PromptEditor — history', () => {
   });
 
   it('setValue can skip history', () => {
-    const editor = createPromptEditor({ value: 'keep' });
+    const editor = createAIComposer({ value: 'keep' });
     editor.setValue('staged', { label: 'stage' });
     editor.setValue('external', { history: false });
     // the history-less setValue left no step, so undo returns to before 'staged'
@@ -236,22 +246,22 @@ describe('PromptEditor — history', () => {
   });
 });
 
-describe('PromptEditor — disabled / readonly / destroy', () => {
+describe('AIComposer — disabled / readonly / destroy', () => {
   it('disabled blocks editing commands', async () => {
-    const editor = createPromptEditor({ value: 'x', disabled: true });
+    const editor = createAIComposer({ value: 'x', disabled: true });
     expect(editor.canExecuteCommand('submit')).toBe(false);
     editor.setDisabled(false);
     expect(editor.canExecuteCommand('submit')).toBe(true);
   });
 
   it('readonly blocks submit but allows programmatic reads', async () => {
-    const editor = createPromptEditor({ value: 'x', readonly: true });
+    const editor = createAIComposer({ value: 'x', readonly: true });
     await editor.submit();
     expect(editor.serialize('text')).toBe('x');
   });
 
   it('destroyed editors throw on mutation', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const onDestroy = vi.fn();
     editor.on('destroy', onDestroy);
     editor.destroy();
@@ -260,7 +270,7 @@ describe('PromptEditor — disabled / readonly / destroy', () => {
   });
 
   it('configure/setMode update state and emit modeChange', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const onMode = vi.fn();
     editor.on('modeChange', onMode);
     editor.setMode('chat');
@@ -271,23 +281,23 @@ describe('PromptEditor — disabled / readonly / destroy', () => {
   });
 });
 
-describe('PromptEditor — registries', () => {
+describe('AIComposer — registries', () => {
   it('exposes built-in commands', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     for (const id of ['submit', 'clear', 'undo', 'redo', 'insertText', 'insertNode', 'focus']) {
       expect(editor.commands.has(id), id).toBe(true);
     }
   });
 
   it('serializes through registered serializers', () => {
-    const editor = createPromptEditor({ value: 'plain' });
+    const editor = createAIComposer({ value: 'plain' });
     expect(editor.serialize('json')).toMatchObject({ nodes: [{ type: 'text', text: 'plain' }] });
     expect(editor.serialize('text')).toBe('plain');
     expect(() => editor.serialize('nope' as never)).toThrowError();
   });
 
   it('supports runtime plugin registration with cleanup', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const cleanup = vi.fn();
     const plugin = {
       name: 'test-plugin',

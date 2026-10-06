@@ -16,7 +16,7 @@ const preview: Preview = {
     docs: {
       description: {
         component:
-          'AI Composer — a framework-agnostic prompt editor. This is the **React adapter** (`@ai-composer/react`). One engine (core), a DOM layer, and thin framework bindings.',
+          'AI Composer — a framework-agnostic composition editor. This is the **React adapter** (`@ai-composer/react`). One engine (core), a DOM layer, and thin framework bindings.',
       },
     },
   },

@@ -2,10 +2,10 @@
  * @ai-composer/plugin-command — `/slash` commands.
  *
  * ```ts
- * import { createPromptEditor } from '@ai-composer/core';
+ * import { createAIComposer } from '@ai-composer/core';
  * import { commandPlugin } from '@ai-composer/plugin-command';
  *
- * const editor = createPromptEditor({
+ * const editor = createAIComposer({
  *   plugins: [
  *     commandPlugin({
  *       commands: [
@@ -17,7 +17,7 @@
  * });
  * ```
  *
- * Commands WITHOUT `run` insert a command node into the prompt; commands WITH
+ * Commands WITHOUT `run` insert a command node into the document; commands WITH
  * `run` execute immediately and the trigger run is simply removed.
  */
 
@@ -26,9 +26,9 @@ import {
   defineTrigger,
   type DocumentRange,
 
-  type PromptEditor,
-  type PromptPlugin,
-  type PromptTrigger,
+  type AIComposer,
+  type AIComposerPlugin,
+  type AIComposerTrigger,
   type SuggestionItem,
   type TriggerSearchContext,
   type TriggerSelectContext,
@@ -39,7 +39,7 @@ export interface SlashCommandDefinition {
   label: string;
   description?: string;
   /** Immediate action; when omitted the command is inserted as a node. */
-  run?: (editor: PromptEditor) => void | Promise<void>;
+  run?: (editor: AIComposer) => void | Promise<void>;
   /** Extra payload stored on the node metadata / suggestion data. */
   data?: Record<string, unknown>;
 }
@@ -55,7 +55,7 @@ export interface CommandPluginOptions {
   search?: (context: TriggerSearchContext) => SlashCommandDefinition[] | Promise<SlashCommandDefinition[]>;
 }
 
-export function commandPlugin(options: CommandPluginOptions): PromptPlugin {
+export function commandPlugin(options: CommandPluginOptions): AIComposerPlugin {
   const character = options.trigger ?? '/';
   const definitions = options.commands ?? [];
 
@@ -91,7 +91,7 @@ export function commandPlugin(options: CommandPluginOptions): PromptPlugin {
       return;
     }
 
-    // Prompt command: insert a command node in place of the trigger run.
+    // Command nodes replace the trigger run in the document.
     context.editor.replaceRange(
       range,
       [
@@ -105,7 +105,7 @@ export function commandPlugin(options: CommandPluginOptions): PromptPlugin {
     );
   };
 
-  const trigger: PromptTrigger = defineTrigger({
+  const trigger: AIComposerTrigger = defineTrigger({
     id: options.id ?? 'command',
     character,
     type: 'command',

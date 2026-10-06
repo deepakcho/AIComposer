@@ -24,7 +24,7 @@ type Story = StoryObj;
 
 const editorStory = (placeholder = 'Ask anything…') => ({
   props: { editor: demoEditor({ mode: 'chat', placeholder }) },
-  template: `<aic-prompt-editor [editor]="editor" mode="chat"></aic-prompt-editor>`,
+  template: `<aic-ai-composer [editor]="editor" mode="chat"></aic-ai-composer>`,
 });
 
 export const MentionFlow: Story = {
@@ -34,10 +34,10 @@ export const MentionFlow: Story = {
     docs: {
       source: {
         code: `@Component({
-  template: \`<aic-prompt-editor [editor]="editor" mode="chat"></aic-prompt-editor>\`,
+  template: \`<aic-ai-composer [editor]="editor" mode="chat"></aic-ai-composer>\`,
 })
 class Demo {
-  editor = createPromptEditor({
+  editor = createAIComposer({
     plugins: [mentionPlugin({ items: people })],
   });
 }`,
@@ -62,7 +62,7 @@ export const CommandMenu: Story = {
   render: () => editorStory(),
   parameters: {
     docs: {
-      source: { code: `<aic-prompt-editor [editor]="editor" mode="chat"></aic-prompt-editor> <!-- type / -->` },
+      source: { code: `<aic-ai-composer [editor]="editor" mode="chat"></aic-ai-composer> <!-- type / -->` },
       description: { story: 'Play function: types "/", picks the second command with ArrowDown + Enter.' },
     },
   },

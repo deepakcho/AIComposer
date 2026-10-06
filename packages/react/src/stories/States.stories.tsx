@@ -4,10 +4,10 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 
-const meta: Meta<typeof PromptEditor> = {
-  component: PromptEditor,
+const meta: Meta<typeof AIComposer> = {
+  component: AIComposer,
   tags: ['autodocs'],
   title: 'AI Composer/React/States',
   parameters: {
@@ -21,13 +21,13 @@ const meta: Meta<typeof PromptEditor> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PromptEditor>;
+type Story = StoryObj<typeof AIComposer>;
 
 export const Disabled: Story = {
   args: { mode: 'chat', value: 'You cannot edit me', disabled: true },
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="chat" value="You cannot edit me" disabled />' },
+      source: { code: '<AIComposer mode="chat" value="You cannot edit me" disabled />' },
       description: { story: 'Dims and blocks input (aria-disabled + contenteditable=false).' },
     },
   },
@@ -37,7 +37,7 @@ export const Readonly: Story = {
   args: { mode: 'chat', value: 'Read-only but submittable via API', readonly: true },
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="chat" value="Read-only…" readonly />' },
+      source: { code: '<AIComposer mode="chat" value="Read-only…" readonly />' },
       description: { story: 'Selection and copy work; editing does not. Submit still available programmatically.' },
     },
   },
@@ -50,7 +50,7 @@ export const DarkTheme: Story = {
     docs: {
       source: {
         code: `<div data-aic-theme="dark">
-  <PromptEditor mode="chat" />
+  <AIComposer mode="chat" />
 </div>`,
       },
       description: { story: 'Dark tokens are opt-in via `data-aic-theme="dark"` on any ancestor (or the root itself) — import `@ai-composer/themes/css/dark.css`.' },

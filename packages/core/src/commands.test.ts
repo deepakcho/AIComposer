@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPromptEditor } from './factory';
+import { createAIComposer } from './factory';
 import { createMentionNode, createTextNode } from './model/nodes';
 import { BUILTIN_COMMANDS } from './commands/builtins';
 
 describe('command system', () => {
   it('executes built-in commands by id', async () => {
-    const editor = createPromptEditor({ value: 'hello' });
+    const editor = createAIComposer({ value: 'hello' });
     await editor.executeCommand(BUILTIN_COMMANDS.clear);
     expect(editor.getState().empty).toBe(true);
     await editor.executeCommand(BUILTIN_COMMANDS.undo);
@@ -13,7 +13,7 @@ describe('command system', () => {
   });
 
   it('insertText/insertNode work through commands', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     await editor.executeCommand(BUILTIN_COMMANDS.insertText, { text: 'hi ' });
     await editor.executeCommand(BUILTIN_COMMANDS.insertNode, {
       node: createMentionNode({ id: 'u1', label: 'Ada' }),
@@ -22,18 +22,18 @@ describe('command system', () => {
   });
 
   it('throws for unknown commands', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     await expect(editor.executeCommand('nope')).rejects.toThrowError('nope');
   });
 
   it('canExecute gates execution', async () => {
-    const editor = createPromptEditor({ value: 'x', disabled: true });
+    const editor = createAIComposer({ value: 'x', disabled: true });
     await editor.executeCommand(BUILTIN_COMMANDS.clear); // no-op: disabled
     expect(editor.serialize('text')).toBe('x');
   });
 
   it('emits commandExecute', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const onExecute = vi.fn();
     editor.on('commandExecute', onExecute);
     await editor.executeCommand(BUILTIN_COMMANDS.insertText, 'hello');
@@ -42,7 +42,7 @@ describe('command system', () => {
   });
 
   it('plugins contribute custom commands', async () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [
         {
           name: 'shout',
@@ -64,19 +64,19 @@ describe('command system', () => {
   });
 
   it('openTrigger command validates the trigger id', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     await expect(editor.executeCommand(BUILTIN_COMMANDS.openTrigger, 'ghost')).rejects.toThrowError();
   });
 });
 
 describe('serialization', () => {
-  const editor = createPromptEditor({
+  const editor = createAIComposer({
     value: [createTextNode('hello '), createMentionNode({ id: 'u1', label: 'Ada' }), createTextNode('!')],
   });
 
   it('json round-trips the document', () => {
     const json = editor.serialize('json') as ReturnType<typeof editor.getValue>;
-    const restored = createPromptEditor({ value: json as never });
+    const restored = createAIComposer({ value: json as never });
     expect(restored.serialize('text')).toBe('hello @Ada!');
   });
 
@@ -89,7 +89,7 @@ describe('serialization', () => {
   });
 
   it('html escapes user content', () => {
-    const unsafe = createPromptEditor({ value: '<script>alert(1)</script>' });
+    const unsafe = createAIComposer({ value: '<script>alert(1)</script>' });
     const html = unsafe.serialize('html') as string;
     expect(html).toContain('&lt;script&gt;');
     expect(html).not.toContain('<script>');
@@ -105,7 +105,7 @@ describe('serialization', () => {
   });
 
   it('custom serializers can be registered', () => {
-    const custom = createPromptEditor({
+    const custom = createAIComposer({
       serializers: [
         {
           format: 'text',

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPromptEditor, createPosition, createSelection } from '@ai-composer/core';
+import { createAIComposer, createPosition, createSelection } from '@ai-composer/core';
 import { mentionPlugin } from './index';
 
 const items = [
@@ -8,7 +8,7 @@ const items = [
   { id: 'u3', label: 'Grace Hopper' },
 ];
 
-function type(editor: ReturnType<typeof createPromptEditor>, text: string): void {
+function type(editor: ReturnType<typeof createAIComposer>, text: string): void {
   const current = editor.serialize('text') as string;
   editor.applyViewUpdate({ nodes: [{ type: 'text', key: 't', text: current + text }] });
   editor.setSelection(createSelection(createPosition(0, (current + text).length)));
@@ -16,13 +16,13 @@ function type(editor: ReturnType<typeof createPromptEditor>, text: string): void
 
 describe('mentionPlugin', () => {
   it('registers the mention trigger', () => {
-    const editor = createPromptEditor({ plugins: [mentionPlugin({ items })] });
+    const editor = createAIComposer({ plugins: [mentionPlugin({ items })] });
     expect(editor.triggers.get('mention')).toBeDefined();
     expect(editor.triggers.get('mention')?.character).toBe('@');
   });
 
   it('filters the static pool and inserts a mention node on accept', async () => {
-    const editor = createPromptEditor({ plugins: [mentionPlugin({ items })] });
+    const editor = createAIComposer({ plugins: [mentionPlugin({ items })] });
     type(editor, 'cc @tu');
     await vi.waitFor(() => expect(editor.getState().suggestions.length).toBe(1));
 
@@ -36,7 +36,7 @@ describe('mentionPlugin', () => {
     const search = vi.fn(async (ctx: { query: string }) =>
       items.filter((item) => item.label.toLowerCase().startsWith(ctx.query.toLowerCase())),
     );
-    const editor = createPromptEditor({ plugins: [mentionPlugin({ search })] });
+    const editor = createAIComposer({ plugins: [mentionPlugin({ search })] });
 
     type(editor, '@gr');
     await vi.waitFor(() => expect(editor.getState().suggestions.map((s) => s.id)).toEqual(['u3']));
@@ -44,7 +44,7 @@ describe('mentionPlugin', () => {
   });
 
   it('honors a custom trigger character', async () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [mentionPlugin({ items, trigger: '#', id: 'hashtag' })],
     });
     type(editor, '#ad');

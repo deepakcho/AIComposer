@@ -4,10 +4,10 @@
 
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { h } from 'vue';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 
 const meta: Meta = {
-  component: PromptEditor as never,
+  component: AIComposer as never,
   tags: ['autodocs'],
   title: 'AI Composer/Vue/States',
   parameters: {
@@ -19,8 +19,8 @@ const meta: Meta = {
   },
   args: { mode: 'chat' },
   render: (args) => ({
-    components: { PromptEditor },
-    setup: () => () => h(PromptEditor as never, { ...args }),
+    components: { AIComposer },
+    setup: () => () => h(AIComposer as never, { ...args }),
   }),
 };
 
@@ -30,14 +30,14 @@ type Story = StoryObj;
 export const Disabled: Story = {
   args: { disabled: true, modelValue: 'You cannot edit me' },
   parameters: {
-    docs: { source: { code: '<PromptEditor mode="chat" disabled />' } },
+    docs: { source: { code: '<AIComposer mode="chat" disabled />' } },
   },
 };
 
 export const Readonly: Story = {
   args: { readonly: true, modelValue: 'Read-only but submittable via API' },
   parameters: {
-    docs: { source: { code: '<PromptEditor mode="chat" readonly />' } },
+    docs: { source: { code: '<AIComposer mode="chat" readonly />' } },
   },
 };
 
@@ -48,16 +48,16 @@ export const DarkTheme: Story = {
     docs: {
       source: {
         code: `<div data-aic-theme="dark">
-  <PromptEditor mode="chat" />
+  <AIComposer mode="chat" />
 </div>`,
       },
     },
   },
   render: (args) => ({
-    components: { PromptEditor },
+    components: { AIComposer },
     setup: () => () =>
       h('div', { 'data-aic-theme': 'dark', style: 'min-height:200px' }, [
-        h(PromptEditor as never, { ...args }),
+        h(AIComposer as never, { ...args }),
       ]),
   }),
 };

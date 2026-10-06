@@ -5,18 +5,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { createMentionNode, createTextNode } from '@ai-composer/core';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 import { createDemoEditor } from './utils';
 
-const meta: Meta<typeof PromptEditor> = {
-  component: PromptEditor,
+const meta: Meta<typeof AIComposer> = {
+  component: AIComposer,
   tags: ['autodocs'],
   title: 'AI Composer/React/Basic',
   parameters: {
     docs: {
       description: {
         component:
-          'The zero-config path (Level 1): drop `<PromptEditor>` in and you get the editable surface, caret-anchored suggestion popups, undo/redo and submit. Everything below is one prop away.',
+          'The zero-config path (Level 1): drop `<AIComposer>` in and you get the editable surface, caret-anchored suggestion popups, undo/redo and submit. Everything below is one prop away.',
       },
     },
   },
@@ -24,12 +24,12 @@ const meta: Meta<typeof PromptEditor> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PromptEditor>;
+type Story = StoryObj<typeof AIComposer>;
 
 export const Default: Story = {
   parameters: {
     docs: {
-      source: { code: "<PromptEditor mode=\"chat\" placeholder=\"Ask anything…\" />" },
+      source: { code: "<AIComposer mode=\"chat\" placeholder=\"Ask anything…\" />" },
       description: { story: 'Zero configuration. Enter submits, Shift+Enter adds a newline, the box auto-grows with content.' },
     },
   },
@@ -48,7 +48,7 @@ export const InitialValue: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor
+        code: `<AIComposer
   mode="chat"
   value={{
     nodes: [
@@ -77,7 +77,7 @@ export const SubmitFlow: Story = {
   }));
   return (
     <>
-      <PromptEditor editor={editor} mode="chat" />
+      <AIComposer editor={editor} mode="chat" />
       <pre>{log.join('\\n') || 'press Enter…'}</pre>
     </>
   );
@@ -100,7 +100,7 @@ function SubmitDemo(): JSX.Element {
   );
   return (
     <div>
-      <PromptEditor editor={editor} mode="chat" />
+      <AIComposer editor={editor} mode="chat" />
       <pre
         style={{
           background: '#f6f7f9',

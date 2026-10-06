@@ -63,7 +63,7 @@
     "build-storybook": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/vue --test",
+        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/vue",
         "cwd": "packages/vue"
       },
       "outputs": [

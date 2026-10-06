@@ -7,14 +7,14 @@ export const ErrorCode = {
   PLUGIN_SETUP_FAILED: 'PLUGIN_SETUP_FAILED',
 } as const;
 
-export type PromptErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+export type AIComposerErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
-export class PromptEditorError extends Error {
-  readonly code: PromptErrorCode;
+export class AIComposerError extends Error {
+  readonly code: AIComposerErrorCode;
 
-  constructor(code: PromptErrorCode, message: string) {
+  constructor(code: AIComposerErrorCode, message: string) {
     super(`[${code}] ${message}`);
-    this.name = 'PromptEditorError';
+    this.name = 'AIComposerError';
     this.code = code;
   }
 }

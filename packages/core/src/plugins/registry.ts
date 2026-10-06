@@ -5,40 +5,40 @@
  */
 
 import type { Unsubscribe, EventBus } from '../events/event-bus';
-import type { PromptEditorEventMap } from '../events/events';
-import type { PromptCommand } from '../commands/registry';
-import type { PromptTrigger } from '../triggers/engine';
+import type { AIComposerEventMap } from '../events/events';
+import type { AIComposerCommand } from '../commands/registry';
+import type { AIComposerTrigger } from '../triggers/engine';
 import type { NodeDefinition } from '../nodes/registry';
 import type { Serializer } from '../serialization/serializers';
 import type { CommandRegistry } from '../commands/registry';
 import type { TriggerRegistry } from '../triggers/engine';
 import type { NodeRegistry } from '../nodes/registry';
 import type { SerializerRegistry } from '../serialization/registry';
-import type { PromptEditor } from '../editor';
-import type { PromptEditorConfig } from '../types';
+import type { AIComposer } from '../editor';
+import type { AIComposerConfig } from '../types';
 
 /** Controlled capabilities exposed to plugins. */
 export interface PluginContext {
-  editor: PromptEditor;
-  getConfig(): PromptEditorConfig;
+  editor: AIComposer;
+  getConfig(): AIComposerConfig;
   commands: CommandRegistry;
   triggers: TriggerRegistry;
   nodes: NodeRegistry;
   serializers: SerializerRegistry;
   /** Subscribe to editor events (emit is intentionally not handed out). */
-  events: Pick<EventBus<PromptEditorEventMap>, 'on' | 'once' | 'off'>;
+  events: Pick<EventBus<AIComposerEventMap>, 'on' | 'once' | 'off'>;
   /** Register cleanup run when the plugin is destroyed. */
   onCleanup(cleanup: () => void): void;
 }
 
-export interface PromptPlugin {
+export interface AIComposerPlugin {
   /** Unique plugin name. */
   name: string;
   version?: string;
   /** Imperative wiring — called once when the plugin is attached. */
   setup?(context: PluginContext): void;
-  commands?: PromptCommand[];
-  triggers?: PromptTrigger[];
+  commands?: AIComposerCommand[];
+  triggers?: AIComposerTrigger[];
   nodeTypes?: NodeDefinition[];
   serializers?: Serializer[];
   /** Called when the plugin is removed or the editor destroyed. */
@@ -46,16 +46,16 @@ export interface PromptPlugin {
 }
 
 interface InstalledPlugin {
-  plugin: PromptPlugin;
+  plugin: AIComposerPlugin;
   disposers: Array<() => void>;
 }
 
 export interface PluginRegistry {
-  add(plugin: PromptPlugin): Unsubscribe;
-  get(name: string): PromptPlugin | undefined;
-  list(): PromptPlugin[];
+  add(plugin: AIComposerPlugin): Unsubscribe;
+  get(name: string): AIComposerPlugin | undefined;
+  list(): AIComposerPlugin[];
   /** Set up a plugin immediately with the given context (used by the factory). */
-  install(plugin: PromptPlugin, context: PluginContext): Unsubscribe;
+  install(plugin: AIComposerPlugin, context: PluginContext): Unsubscribe;
   destroyAll(): void;
 }
 

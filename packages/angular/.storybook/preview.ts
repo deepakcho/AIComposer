@@ -1,8 +1,9 @@
 import type { Preview } from '@storybook/angular';
-import '@ai-composer/themes/css/tokens.css';
-import '@ai-composer/themes/css/default.css';
+import { moduleMetadata } from '@storybook/angular';
+import { AI_COMPOSER_IMPORTS } from '../src';
 
 const preview: Preview = {
+  decorators: [moduleMetadata({ imports: [...AI_COMPOSER_IMPORTS] })],
   parameters: {
     layout: 'padded',
     docs: {

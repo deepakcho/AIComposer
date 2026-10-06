@@ -9,15 +9,15 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useState } from 'react';
 import { createMentionNode, createTextNode } from '@ai-composer/core';
 import {
-  PromptEditor,
-  PromptInput,
-  PromptSuggestions,
-  usePromptState,
+  AIComposer,
+  AIComposerInput,
+  AIComposerSuggestions,
+  useAIComposerState,
 } from '../index';
 import { createDemoEditor } from './utils';
 
-const meta: Meta<typeof PromptEditor> = {
-  component: PromptEditor,
+const meta: Meta<typeof AIComposer> = {
+  component: AIComposer,
   tags: ['autodocs'],
   title: 'AI Composer/React/Mentions & Commands',
   parameters: {
@@ -31,7 +31,7 @@ const meta: Meta<typeof PromptEditor> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PromptEditor>;
+type Story = StoryObj<typeof AIComposer>;
 
 export const MentionChips: Story = {
   name: 'Mention chips · initial value',
@@ -50,7 +50,7 @@ export const MentionChips: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor
+        code: `<AIComposer
   value={{
     nodes: [
       createTextNode('Review with '),
@@ -73,7 +73,7 @@ export const MentionFlow: Story = {
     docs: {
       source: {
         code: `const [editor] = useState(() => createDemoEditor());
-<PromptEditor editor={editor} mode="chat" />`,
+<AIComposer editor={editor} mode="chat" />`,
       },
       description: { story: 'Play function: types "Hello @ad", asserts the popup lists Ada Lovelace, accepts with Enter and checks the chip landed in the document.' },
     },
@@ -99,7 +99,7 @@ export const CommandMenu: Story = {
     docs: {
       source: {
         code: `const [editor] = useState(() => createDemoEditor());
-<PromptEditor editor={editor} mode="chat" /> // type "/" for commands`,
+<AIComposer editor={editor} mode="chat" /> // type "/" for commands`,
       },
       description: { story: 'Play function: types "/", picks "Summarize" with ArrowDown + Enter.' },
     },
@@ -125,10 +125,10 @@ export const CustomItemRenderer: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor editor={editor}>
+        code: `<AIComposer editor={editor}>
   <div className="aic-body" data-aic-slot="body">
-    <PromptInput suggestions={false} />
-    <PromptSuggestions
+    <AIComposerInput suggestions={false} />
+    <AIComposerSuggestions
       renderItem={(item, active) => (
         <span>
           <strong>{item.label}</strong>
@@ -138,26 +138,26 @@ export const CustomItemRenderer: Story = {
       )}
     />
   </div>
-</PromptEditor>`,
+</AIComposer>`,
       },
-      description: { story: 'Own the popup markup: `<PromptInput suggestions={false} />` + `<PromptSuggestions>` with a render prop. Positioning stays caret-anchored and viewport-aware.' },
+      description: { story: 'Own the popup markup: `<AIComposerInput suggestions={false} />` + `<AIComposerSuggestions>` with a render prop. Positioning stays caret-anchored and viewport-aware.' },
     },
   },
 };
 
 function EditorDemo(): JSX.Element {
   const [editor] = useState(() => createDemoEditor());
-  return <PromptEditor editor={editor} mode="chat" />;
+  return <AIComposer editor={editor} mode="chat" />;
 }
 
 function CustomSuggestionsDemo(): JSX.Element {
   const [editor] = useState(() => createDemoEditor());
-  const state = usePromptState(editor);
+  const state = useAIComposerState(editor);
   return (
-    <PromptEditor editor={editor}>
+    <AIComposer editor={editor}>
       <div className="aic-body" data-aic-slot="body">
-        <PromptInput suggestions={false} />
-        <PromptSuggestions
+        <AIComposerInput suggestions={false} />
+        <AIComposerSuggestions
           renderItem={(item, active) => (
             <span>
               <strong>{item.label}</strong>
@@ -170,6 +170,6 @@ function CustomSuggestionsDemo(): JSX.Element {
       <div className="aic-footer" data-aic-slot="footer">
         <code>{state.suggestions.length} suggestions · query "{state.activeTrigger?.query ?? ''}"</code>
       </div>
-    </PromptEditor>
+    </AIComposer>
   );
 }

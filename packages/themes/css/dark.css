@@ -1,23 +1,38 @@
 /* Dark theme — override tokens only; structure comes from default.css.
    Opt-in: set data-aic-theme="dark" on <html> (or any ancestor, or the
-   .aic-root element itself). Importing this file alone changes nothing. */
+   .aic-root element itself). Importing this file alone changes nothing.
+   The send button inverts: light circle, dark glyph. */
 
 .aic-root[data-aic-theme='dark'],
 [data-aic-theme='dark'] .aic-root {
-  --aic-background: #16181d;
-  --aic-surface-raised: #1f232b;
-  --aic-border: #333842;
-  --aic-border-focus: #818cf8;
+  --aic-background: #202024;
+  --aic-surface-raised: #2b2b31;
+  --aic-surface-hover: #35353c;
+  --aic-border: rgb(255 255 255 / 14%);
+  --aic-border-focus: #5ed6c0;
 
-  --aic-text: #e6e8eb;
-  --aic-text-muted: #9aa1ac;
-  --aic-text-placeholder: #6b7280;
+  --aic-text: #f4f4f5;
+  --aic-text-muted: #a1a1aa;
+  --aic-text-placeholder: #565660;
 
-  --aic-accent: #818cf8;
-  --aic-accent-contrast: #111318;
-  --aic-chip-background: #262a4a;
-  --aic-chip-text: #c7d2fe;
+  --aic-accent: #fafafa;
+  --aic-accent-hover: #d4d4d8;
+  --aic-accent-contrast: #18181b;
+  --aic-accent-disabled: #3f3f46;
+  --aic-accent-disabled-contrast: #c4c4cc;
 
-  --aic-shadow: 0 4px 16px rgb(0 0 0 / 50%);
-  --aic-focus-ring: 0 0 0 2px rgb(129 140 248 / 45%);
+  --aic-chip-background: #2b2b31;
+  --aic-chip-text: #d4d4d8;
+  --aic-chip-mention-background: #1c2c47;
+  --aic-chip-mention-text: #8cb4f8;
+  --aic-chip-command-background: #2e2246;
+  --aic-chip-command-text: #c4a8fb;
+  --aic-chip-variable-background: #3a2f16;
+  --aic-chip-variable-text: #ecc36b;
+  --aic-chip-hashtag-background: #14352a;
+  --aic-chip-hashtag-text: #7ed9a9;
+
+  --aic-shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 4px 12px rgb(0 0 0 / 30%);
+  --aic-shadow-raised: 0 4px 6px -1px rgb(0 0 0 / 40%), 0 2px 4px -2px rgb(0 0 0 / 40%);
+  --aic-focus-ring: 0 0 0 3px rgb(94 214 192 / 18%);
 }

@@ -2,10 +2,10 @@
  * @ai-composer/plugin-mention — `@mention` trigger.
  *
  * ```ts
- * import { createPromptEditor } from '@ai-composer/core';
+ * import { createAIComposer } from '@ai-composer/core';
  * import { mentionPlugin } from '@ai-composer/plugin-mention';
  *
- * const editor = createPromptEditor({
+ * const editor = createAIComposer({
  *   plugins: [
  *     mentionPlugin({
  *       items: [
@@ -19,8 +19,8 @@
 
 import {
   defineTrigger,
-  type PromptPlugin,
-  type PromptTrigger,
+  type AIComposerPlugin,
+  type AIComposerTrigger,
   type SuggestionItem,
   type TriggerSearchContext,
   type TriggerSelectContext,
@@ -43,7 +43,7 @@ export interface MentionPluginOptions {
   limit?: number;
 }
 
-export function mentionPlugin(options: MentionPluginOptions = {}): PromptPlugin {
+export function mentionPlugin(options: MentionPluginOptions = {}): AIComposerPlugin {
   const character = options.trigger ?? '@';
   const limit = options.limit ?? 10;
 
@@ -60,7 +60,7 @@ export function mentionPlugin(options: MentionPluginOptions = {}): PromptPlugin 
       .slice(0, limit);
   };
 
-  const trigger: PromptTrigger = defineTrigger({
+  const trigger: AIComposerTrigger = defineTrigger({
     id: options.id ?? 'mention',
     character,
     type: 'mention',

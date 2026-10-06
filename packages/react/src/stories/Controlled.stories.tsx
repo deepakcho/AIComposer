@@ -4,10 +4,10 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 
-const meta: Meta<typeof PromptEditor> = {
-  component: PromptEditor,
+const meta: Meta<typeof AIComposer> = {
+  component: AIComposer,
   tags: ['autodocs'],
   title: 'AI Composer/React/Controlled',
   parameters: {
@@ -21,7 +21,7 @@ const meta: Meta<typeof PromptEditor> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PromptEditor>;
+type Story = StoryObj<typeof AIComposer>;
 
 export const ControlledValue: Story = {
   render: () => <ControlledDemo />,
@@ -30,7 +30,7 @@ export const ControlledValue: Story = {
       source: {
         code: `const [text, setText] = useState('Controlled value');
 
-<PromptEditor
+<AIComposer
   mode="compact"
   value={text}
   onChange={(doc) =>
@@ -48,7 +48,7 @@ export const EventLog: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor
+        code: `<AIComposer
   mode="chat"
   onChange={(doc) => log('change', doc)}
   onSubmit={(doc) => log('submit', doc)}
@@ -63,7 +63,7 @@ function ControlledDemo(): JSX.Element {
   const [text, setText] = useState('Controlled value');
   return (
     <div>
-      <PromptEditor
+      <AIComposer
         mode="compact"
         value={text}
         onChange={(value) =>
@@ -83,7 +83,7 @@ function EventLogDemo(): JSX.Element {
   const [log, setLog] = useState<LogEntry[]>([]);
   return (
     <div>
-      <PromptEditor
+      <AIComposer
         mode="chat"
         onChange={(value) =>
           setLog((previous) => [

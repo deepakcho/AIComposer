@@ -17,9 +17,9 @@ import {
   getRange,
   sanitizeDocument,
   toGlobalOffset,
-  type PromptDocument,
-  type PromptEditor,
-  type PromptNode,
+  type AIComposerDocument,
+  type AIComposer,
+  type AIComposerNode,
   type SubmitKey,
   type Unsubscribe,
 } from '@ai-composer/core';
@@ -58,7 +58,7 @@ export const EDITABLE_SURFACE_CLASS = 'aic-input';
 let surfaceCounter = 0;
 
 export function createEditableSurface(
-  editor: PromptEditor,
+  editor: AIComposer,
   host: HTMLElement,
   options: EditableSurfaceOptions = {},
 ): EditableSurface {
@@ -73,7 +73,7 @@ export function createEditableSurface(
   let fromDom = false;
   let destroyed = false;
   let multiline = options.multiline ?? true;
-  let lastRendered: PromptDocument | null = null;
+  let lastRendered: AIComposerDocument | null = null;
   const disposables: Unsubscribe[] = [];
 
   host.id = surfaceId;
@@ -124,19 +124,26 @@ export function createEditableSurface(
         render();
       }
     }
-    syncMultilineHint();
+    syncMultilineHint(state.empty);
   }
 
   /**
    * Multiline detection for styling (compact pill → rounded box) and a11y:
    * true when the model contains a newline OR the content spans more than one
    * line box (soft wrap). Growth then comes from `height: auto`; the cap is
-   * `--aic-input-max-height` with an internal scrollbar.
+   * `--aic-input-max-height` with an internal scrollbar. Never true for an
+   * empty host — the browser's trailing `<br>` artifact would flag it.
    */
-  function syncMultilineHint(): void {
-    const hasNewline = documentToText(editor.getValue(), { nodes: editor.nodes }).includes('\n');
-    const multiline = hasNewline || spansMultipleLines(host);
+  function syncMultilineHint(empty: boolean): void {
+    // Only real text newlines count — serialized chips may render as '\n'.
+    const hasNewline = editor
+      .getValue()
+      .nodes.some((node) => node.type === 'text' && node.text.includes('\n'));
+    const multiline = !empty && (hasNewline || spansMultipleLines(host));
+    // Mirrored onto the root so theme CSS uses plain attribute selectors —
+    // `:has()`-based rules are still dropped by some engine versions.
     host.toggleAttribute('data-aic-multiline', multiline);
+    host.closest('.aic-root')?.toggleAttribute('data-aic-multiline', multiline);
   }
 
   // -- input pipeline --------------------------------------------------------
@@ -249,7 +256,7 @@ export function createEditableSurface(
     const internal = transfer.getData(CLIPBOARD_MIME);
     if (internal) {
       try {
-        const parsed = JSON.parse(internal) as { nodes?: PromptNode[] };
+        const parsed = JSON.parse(internal) as { nodes?: AIComposerNode[] };
         if (Array.isArray(parsed?.nodes)) {
           const sanitized = sanitizeDocument(
             { nodes: parsed.nodes.map(ensureNodeKey) },
@@ -274,7 +281,7 @@ export function createEditableSurface(
     const payload = sliceSelection(editor.getValue(), editor.getSelection());
     if (payload.nodes.length === 0) return;
     event.preventDefault();
-    const selectedDoc: PromptDocument = { nodes: payload.nodes };
+    const selectedDoc: AIComposerDocument = { nodes: payload.nodes };
     event.clipboardData?.setData('text/plain', documentText(editor, selectedDoc));
     event.clipboardData?.setData(CLIPBOARD_MIME, JSON.stringify({ nodes: payload.nodes }));
   }
@@ -376,7 +383,7 @@ export function createEditableSurface(
   return surface;
 }
 
-function documentText(editor: PromptEditor, doc: PromptDocument): string {
+function documentText(editor: AIComposer, doc: AIComposerDocument): string {
   return documentToText(doc, { nodes: editor.nodes });
 }
 
@@ -386,25 +393,26 @@ function spansMultipleLines(host: HTMLElement): boolean {
   const range = doc.createRange();
   range.selectNodeContents(host);
   if (typeof range.getClientRects !== 'function') return false; // jsdom
-  const rects = range.getClientRects();
-  if (rects.length === 0) return false;
-  const firstTop = rects[0].top;
-  for (let index = 1; index < rects.length; index += 1) {
-    // Same-line rects (chips, inline runs) share a top within a tolerance.
-    if (Math.abs(rects[index].top - firstTop) > 2) return true;
-  }
-  return false;
+  const rects = Array.from(range.getClientRects());
+  if (rects.length < 2) return false;
+  // Same-line items (inline chips + text runs) overlap vertically, so their
+  // combined span stays close to the tallest single rect; wrapped/newline
+  // content stacks and roughly doubles it.
+  const span =
+    Math.max(...rects.map((rect) => rect.bottom)) - Math.min(...rects.map((rect) => rect.top));
+  const tallest = Math.max(...rects.map((rect) => rect.height));
+  return tallest > 0 && span > tallest * 1.5;
 }
 
 /** Clone the nodes intersecting the current selection (used for copy). */
-function sliceSelection(doc: PromptDocument, selection: Parameters<typeof getRange>[0]): { nodes: PromptNode[] } {
+function sliceSelection(doc: AIComposerDocument, selection: Parameters<typeof getRange>[0]): { nodes: AIComposerNode[] } {
   const { start, end } = getRange(selection);
   const toOffset = (position: { nodeIndex: number; offset: number }): number =>
     toGlobalOffset(doc, position);
   const low = Math.min(toOffset(start), toOffset(end));
   const high = Math.max(toOffset(start), toOffset(end));
 
-  const nodes: PromptNode[] = [];
+  const nodes: AIComposerNode[] = [];
   let cursor = 0;
   for (const node of doc.nodes) {
     const length = node.type === 'text' ? node.text.length : 1;

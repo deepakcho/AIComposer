@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createPromptEditor } from './factory';
+import { createAIComposer } from './factory';
 import { createPosition, createSelection } from './model/selection';
 import type { SuggestionItem } from './state/state';
 
@@ -13,7 +13,7 @@ function editorWithMention() {
   const search = vi.fn(async (ctx: { query: string }) =>
     people.filter((p) => p.label.toLowerCase().includes(ctx.query.toLowerCase())),
   );
-  const editor = createPromptEditor({
+  const editor = createAIComposer({
     plugins: [
       {
         name: 'mention',
@@ -24,7 +24,7 @@ function editorWithMention() {
   return { editor, search };
 }
 
-function type(editor: ReturnType<typeof createPromptEditor>, text: string): void {
+function type(editor: ReturnType<typeof createAIComposer>, text: string): void {
   const current = editor.serialize('text') as string;
   editor.applyViewUpdate({ nodes: [{ type: 'text', key: 't', text: current + text }] });
   editor.setSelection(createSelection(createPosition(0, (current + text).length)));
@@ -83,7 +83,7 @@ describe('trigger engine', () => {
   });
 
   it('moves the highlighted suggestion', async () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [
         {
           name: 'mention',
@@ -117,7 +117,7 @@ describe('trigger engine', () => {
 
   it('custom select handlers control the inserted nodes', async () => {
     const select = vi.fn();
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       plugins: [
         {
           name: 'mention',

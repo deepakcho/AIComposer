@@ -3,7 +3,7 @@
  * never raw DOM Range objects (see ADR-0001).
  */
 
-import type { PromptDocument } from './document';
+import type { AIComposerDocument } from './document';
 import { nodeLength } from './document';
 
 /** Caret or selection endpoint. For atomic nodes offset is 0 (before) or 1 (after). */
@@ -58,7 +58,7 @@ export const getStart = (selection: SelectionState): Position => getRange(select
 export const getEnd = (selection: SelectionState): Position => getRange(selection).end;
 
 /** Convert a model position into a document-wide character offset. */
-export function toGlobalOffset(document: PromptDocument, position: Position): number {
+export function toGlobalOffset(document: AIComposerDocument, position: Position): number {
   let offset = 0;
   for (let i = 0; i < position.nodeIndex && i < document.nodes.length; i += 1) {
     offset += nodeLength(document.nodes[i]);
@@ -70,7 +70,7 @@ export function toGlobalOffset(document: PromptDocument, position: Position): nu
 }
 
 /** Convert a document-wide offset back into a node-relative position. */
-export function fromGlobalOffset(document: PromptDocument, globalOffset: number): Position {
+export function fromGlobalOffset(document: AIComposerDocument, globalOffset: number): Position {
   let remaining = Math.max(0, globalOffset);
   for (let i = 0; i < document.nodes.length; i += 1) {
     const length = nodeLength(document.nodes[i]);
@@ -82,7 +82,7 @@ export function fromGlobalOffset(document: PromptDocument, globalOffset: number)
   return createPosition(document.nodes.length, 0);
 }
 
-export function clampPosition(document: PromptDocument, position: Position): Position {
+export function clampPosition(document: AIComposerDocument, position: Position): Position {
   const maxIndex = document.nodes.length;
   const nodeIndex = Math.min(Math.max(position.nodeIndex, 0), maxIndex);
   if (nodeIndex === maxIndex) {
@@ -97,11 +97,11 @@ export function clampPosition(document: PromptDocument, position: Position): Pos
   return createPosition(nodeIndex, Math.min(Math.max(position.offset, 0), maxOffset));
 }
 
-export function clampSelection(document: PromptDocument, selection: SelectionState): SelectionState {
+export function clampSelection(document: AIComposerDocument, selection: SelectionState): SelectionState {
   return createSelection(clampPosition(document, selection.anchor), clampPosition(document, selection.focus));
 }
 
-export function globalRange(document: PromptDocument, selection: SelectionState): { start: number; end: number } {
+export function globalRange(document: AIComposerDocument, selection: SelectionState): { start: number; end: number } {
   const { start, end } = getRange(selection);
   return { start: toGlobalOffset(document, start), end: toGlobalOffset(document, end) };
 }

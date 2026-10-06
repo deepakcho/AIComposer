@@ -5,15 +5,15 @@
  */
 
 import type { Unsubscribe } from '../events/event-bus';
-import { PromptEditorError } from '../errors';
-import type { PromptDocument } from '../model/document';
+import { AIComposerError } from '../errors';
+import type { AIComposerDocument } from '../model/document';
 import type { SerializationFormat, Serializer, SerializerContext } from './serializers';
 
 export interface SerializerRegistry {
   register(serializer: Serializer): Unsubscribe;
   get(format: SerializationFormat): Serializer | undefined;
   formats(): SerializationFormat[];
-  serialize(format: SerializationFormat, document: PromptDocument, context: SerializerContext): unknown;
+  serialize(format: SerializationFormat, document: AIComposerDocument, context: SerializerContext): unknown;
   clear(): void;
 }
 
@@ -35,7 +35,7 @@ export function createSerializerRegistry(): SerializerRegistry {
     serialize(format, document, context) {
       const serializer = serializers.get(format);
       if (!serializer) {
-        throw new PromptEditorError(
+        throw new AIComposerError(
           'UNKNOWN_FORMAT',
           `No serializer registered for "${format}". Registered: ${[...serializers.keys()].join(', ') || 'none'}`,
         );

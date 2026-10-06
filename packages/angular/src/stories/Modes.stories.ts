@@ -24,7 +24,7 @@ const meta: Meta = {
   render: (args) => ({
     props: { ...args, editor: demoEditor({ mode: args.mode, placeholder: args.placeholder }) },
     template: `
-      <aic-prompt-editor [editor]="editor" [mode]="mode" [placeholder]="placeholder"></aic-prompt-editor>
+      <aic-ai-composer [editor]="editor" [mode]="mode" [placeholder]="placeholder"></aic-ai-composer>
     `,
   }),
 };
@@ -36,7 +36,7 @@ export const Compact: Story = {
   args: { mode: 'compact', placeholder: 'Search or ask…' },
   parameters: {
     docs: {
-      source: { code: `<aic-prompt-editor mode="compact" placeholder="Search or ask…"></aic-prompt-editor>` },
+      source: { code: `<aic-ai-composer mode="compact" placeholder="Search or ask…"></aic-ai-composer>` },
       description: { story: 'Inline pill while single-line; wrapped/multiline content morphs it into a rounded auto-growing box (never clips). Attachments stay projectable.' },
     },
   },
@@ -48,17 +48,17 @@ export const MaxHeight: Story = {
     props: {
       editor: demoEditor({ mode: 'chat', placeholder: 'Type several lines — the box stops at 96px and scrolls…' }),
     },
-    template: `<aic-prompt-editor [editor]="editor" mode="chat" maxHeight="96px"></aic-prompt-editor>`,
+    template: `<aic-ai-composer [editor]="editor" mode="chat" maxHeight="96px"></aic-ai-composer>`,
   }),
   parameters: {
     docs: {
       source: {
         code: `<!-- input (px or any CSS length) -->
-<aic-prompt-editor mode="chat" maxHeight="96px"></aic-prompt-editor>
+<aic-ai-composer mode="chat" maxHeight="96px"></aic-ai-composer>
 
 <!-- or the underlying token -->
 <div style="--aic-input-max-height: 40vh">
-  <aic-prompt-editor mode="chat"></aic-prompt-editor>
+  <aic-ai-composer mode="chat"></aic-ai-composer>
 </div>`,
       },
     },
@@ -68,14 +68,14 @@ export const MaxHeight: Story = {
 export const Chat: Story = {
   args: { mode: 'chat' },
   parameters: {
-    docs: { source: { code: `<aic-prompt-editor mode="chat"></aic-prompt-editor>` } },
+    docs: { source: { code: `<aic-ai-composer mode="chat"></aic-ai-composer>` } },
   },
 };
 
 export const Expanded: Story = {
-  args: { mode: 'expanded', placeholder: 'Write a long, detailed prompt…' },
+  args: { mode: 'expanded', placeholder: 'Write a detailed draft…' },
   parameters: {
-    docs: { source: { code: `<aic-prompt-editor mode="expanded"></aic-prompt-editor>` } },
+    docs: { source: { code: `<aic-ai-composer mode="expanded"></aic-ai-composer>` } },
   },
 };
 
@@ -92,7 +92,7 @@ export const LiveSwitch: Story = {
         <button type="button" (click)="mode = 'expanded'"
                 [style.border]="mode === 'expanded' ? '1px solid #6366f1' : '1px solid #d1d5db'">expanded</button>
       </div>
-      <aic-prompt-editor [editor]="editor" [mode]="mode"></aic-prompt-editor>
+      <aic-ai-composer [editor]="editor" [mode]="mode"></aic-ai-composer>
     `,
   }),
   parameters: {

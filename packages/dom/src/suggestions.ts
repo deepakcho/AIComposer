@@ -5,7 +5,7 @@
  * the editable surface; this module renders and handles clicks.
  */
 
-import type { PromptEditor, SuggestionItem, Unsubscribe } from '@ai-composer/core';
+import type { AIComposer, SuggestionItem, Unsubscribe } from '@ai-composer/core';
 import { attachCaretAnchoredPopup, type CaretAnchor } from './popup';
 
 export interface SuggestionListOptions {
@@ -15,6 +15,8 @@ export interface SuggestionListOptions {
   inputHost?: HTMLElement;
   /** Preferred popup placement relative to the caret; flips to fit the viewport. */
   placement?: 'above' | 'below';
+  /** Decorative keyboard-hints footer (default true). */
+  showKbdHints?: boolean;
 }
 
 export interface SuggestionList {
@@ -24,8 +26,28 @@ export interface SuggestionList {
 
 let listCounter = 0;
 
+/** Decorative footer: ↑↓ navigate · ↵ select · esc close (aria-hidden). */
+function kbdHintsFooter(): HTMLElement {
+  const li = document.createElement('li');
+  li.className = 'aic-suggestion-footer';
+  li.setAttribute('role', 'presentation');
+  li.setAttribute('aria-hidden', 'true');
+  const hints: Array<[string, string]> = [
+    ['↑↓', 'navigate'],
+    ['↵', 'select'],
+    ['esc', 'close'],
+  ];
+  hints.forEach(([key, action], index) => {
+    const kbd = document.createElement('kbd');
+    kbd.textContent = key;
+    li.append(kbd, document.createTextNode(action));
+    if (index < hints.length - 1) li.append(document.createElement('span'));
+  });
+  return li;
+}
+
 export function createSuggestionList(
-  editor: PromptEditor,
+  editor: AIComposer,
   element?: HTMLElement,
   options: SuggestionListOptions = {},
 ): SuggestionList {
@@ -58,7 +80,7 @@ export function createSuggestionList(
 
   const renderItem = options.renderItem ?? defaultItem;
 
-  const sync = (state: ReturnType<PromptEditor['getState']>): void => {
+  const sync = (state: ReturnType<AIComposer['getState']>): void => {
     const open = state.activeTrigger !== null && state.suggestions.length > 0;
     list.hidden = !open;
     list.setAttribute('aria-hidden', String(!open));
@@ -96,6 +118,10 @@ export function createSuggestionList(
       });
       list.appendChild(li);
     });
+
+    if (options.showKbdHints !== false) {
+      list.appendChild(kbdHintsFooter());
+    }
 
     // Position after items exist so the measured height is real.
     anchor?.update();

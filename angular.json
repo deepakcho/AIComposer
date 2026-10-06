@@ -26,7 +26,6 @@
             "browserTarget": "angular:build",
             "compodoc": false,
             "outputDir": "dist/storybook/angular",
-            "test": true,
             "tsConfig": "packages/angular/tsconfig.storybook.json"
           }
         },
@@ -36,7 +35,11 @@
             "outputPath": "dist/packages/angular-app",
             "index": "packages/angular/src/index.html",
             "browser": "packages/angular/src/main.ts",
-            "tsConfig": "packages/angular/tsconfig.lib.json"
+            "tsConfig": "packages/angular/tsconfig.lib.json",
+            "styles": [
+              "packages/themes/css/tokens.css",
+              "packages/themes/css/default.css"
+            ]
           },
           "configurations": {
             "development": {},

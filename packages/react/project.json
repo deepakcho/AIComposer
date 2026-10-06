@@ -63,7 +63,7 @@
     "build-storybook": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/react --test",
+        "command": "storybook build -c .storybook --output-dir ../../dist/storybook/react",
         "cwd": "packages/react"
       },
       "outputs": [

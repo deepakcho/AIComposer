@@ -1,7 +1,7 @@
 /**
  * Node model.
  *
- * A prompt document is a flat list of nodes (see ADR-0002): text runs and
+ * A composer document is a flat list of nodes (see ADR-0002): text runs and
  * atomic "chip" nodes (mention, command, variable, attachment, custom).
  *
  * Every node carries a stable instance `key`. It is NOT the entity id —
@@ -60,12 +60,12 @@ export interface CustomNode extends BaseNode {
   data: unknown;
 }
 
-export type PromptNode = TextNode | MentionNode | CommandNode | VariableNode | AttachmentNode | CustomNode;
+export type AIComposerNode = TextNode | MentionNode | CommandNode | VariableNode | AttachmentNode | CustomNode;
 
 /** Anything that is not a text run is indivisible (length 1) for edits and selection. */
-export type AtomicNode = Exclude<PromptNode, TextNode>;
+export type AtomicNode = Exclude<AIComposerNode, TextNode>;
 
-export type PromptNodeType = PromptNode['type'];
+export type AIComposerNodeType = AIComposerNode['type'];
 
 let sequence = 0;
 
@@ -119,7 +119,7 @@ export function createCustomNode(
 }
 
 /** Assign a key to a hand-built node that lacks one (e.g. from parsed JSON). */
-export function ensureNodeKey<T extends PromptNode>(node: T): T {
+export function ensureNodeKey<T extends AIComposerNode>(node: T): T {
   return node.key ? node : { ...node, key: createNodeKey(node.type) };
 }
 
@@ -127,22 +127,22 @@ export function ensureNodeKey<T extends PromptNode>(node: T): T {
 // Guards
 // ---------------------------------------------------------------------------
 
-export function isTextNode(node: PromptNode): node is TextNode {
+export function isTextNode(node: AIComposerNode): node is TextNode {
   return node.type === 'text';
 }
 
-export function isAtomicNode(node: PromptNode): node is AtomicNode {
+export function isAtomicNode(node: AIComposerNode): node is AtomicNode {
   return node.type !== 'text';
 }
 
-export function getNodeType(node: PromptNode): PromptNodeType {
+export function getNodeType(node: AIComposerNode): AIComposerNodeType {
   return node.type;
 }
 
 /** Lightweight structural validation for documents coming from views / storage. */
-export function isPromptNode(value: unknown): value is PromptNode {
+export function isAIComposerNode(value: unknown): value is AIComposerNode {
   if (typeof value !== 'object' || value === null) return false;
-  const node = value as Partial<PromptNode>;
+  const node = value as Partial<AIComposerNode>;
   return (
     typeof node.type === 'string' &&
     typeof node.key === 'string' &&

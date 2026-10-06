@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StrictMode, type ReactElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { createPromptEditor } from '@ai-composer/core';
-import { definePromptEditorContractSuite } from '@ai-composer/testing';
-import { PromptEditor, PromptInput, PromptToolbar } from './index';
+import { createAIComposer } from '@ai-composer/core';
+import { defineAIComposerContractSuite } from '@ai-composer/testing';
+import { AIComposer, AIComposerInput, AIComposerToolbar } from './index';
 
 let container: HTMLDivElement;
 let root: Root | null = null;
@@ -31,9 +31,9 @@ afterEach(() => {
   container?.remove();
 });
 
-describe('PromptEditor component', () => {
+describe('AIComposer component', () => {
   it('renders the editor with mode attributes', async () => {
-    render(<PromptEditor mode="chat" placeholder="Ask anything…" />);
+    render(<AIComposer mode="chat" placeholder="Ask anything…" />);
     flush();
     await rendered();
     const rootEl = container.querySelector('.aic-root');
@@ -44,11 +44,11 @@ describe('PromptEditor component', () => {
   });
 
   it('typing through the React-mounted surface updates the model', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     render(
-      <PromptEditor editor={editor}>
-        <PromptInput />
-      </PromptEditor>,
+      <AIComposer editor={editor}>
+        <AIComposerInput />
+      </AIComposer>,
     );
     flush();
     await rendered();
@@ -61,12 +61,12 @@ describe('PromptEditor component', () => {
 
   it('submits via the default toolbar button', async () => {
     const onSubmit = vi.fn();
-    const editor = createPromptEditor({ value: 'ping', submit: { onSubmit } });
+    const editor = createAIComposer({ value: 'ping', submit: { onSubmit } });
     render(
-      <PromptEditor editor={editor}>
-        <PromptInput />
-        <PromptToolbar />
-      </PromptEditor>,
+      <AIComposer editor={editor}>
+        <AIComposerInput />
+        <AIComposerToolbar />
+      </AIComposer>,
     );
     flush();
     await rendered();
@@ -78,6 +78,6 @@ describe('PromptEditor component', () => {
 });
 
 // The same contract every adapter must pass.
-definePromptEditorContractSuite((options) => createPromptEditor(options), {
-  title: 'PromptEditor contract (react package, headless reference)',
+defineAIComposerContractSuite((options) => createAIComposer(options), {
+  title: 'AIComposer contract (react package, headless reference)',
 });

@@ -1,25 +1,25 @@
 /** Editor configuration types. */
 
-import type { PromptDocument } from './model/document';
-import type { PromptNode } from './model/nodes';
-import type { PromptPlugin } from './plugins/registry';
+import type { AIComposerDocument } from './model/document';
+import type { AIComposerNode } from './model/nodes';
+import type { AIComposerPlugin } from './plugins/registry';
 import type { Serializer } from './serialization/serializers';
 import type { NodeDefinition } from './nodes/registry';
-import type { PromptEditor } from './editor';
+import type { AIComposer } from './editor';
 import type { HistoryOptions } from './history/history';
 
 export type SubmitKey = 'enter' | 'shift-enter' | 'none';
 
 export interface SubmitConfig {
   /** Async handler invoked by editor.submit(). */
-  onSubmit?(value: PromptDocument, editor: PromptEditor): void | Promise<void>;
+  onSubmit?(value: AIComposerDocument, editor: AIComposer): void | Promise<void>;
   /** Clear the document after a successful submit (default false). */
   clearOnSubmit?: boolean;
-  /** Allow submitting an empty prompt (default false). */
+  /** Allow submitting an empty document (default false). */
   allowEmpty?: boolean;
 }
 
-export interface PromptEditorConfig {
+export interface AIComposerConfig {
   /** Presentation mode / preset name — 'default' | 'compact' | 'chat' | 'expanded' | custom. */
   mode?: string;
   placeholder?: string;
@@ -30,12 +30,13 @@ export interface PromptEditorConfig {
   history?: HistoryOptions;
 }
 
-export interface PromptEditorOptions extends PromptEditorConfig {
+export interface AIComposerOptions extends AIComposerConfig {
   /** Initial value: document, node list or plain string. */
-  value?: PromptDocument | PromptNode[] | string;
-  plugins?: PromptPlugin[];
+  value?: AIComposerDocument | AIComposerNode[] | string;
+  plugins?: AIComposerPlugin[];
   /** Extra/overriding node type definitions. */
   nodeTypes?: NodeDefinition[];
   /** Extra/overriding serializers. */
   serializers?: Serializer[];
 }
+

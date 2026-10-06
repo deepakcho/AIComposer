@@ -12,7 +12,7 @@ const meta: Meta = {
     docs: {
       description: {
         component:
-          'The zero-config path: `<aic-prompt-editor>` with inputs for mode/placeholder. Implements `ControlValueAccessor`, so it drops straight into template-driven or reactive forms.',
+          'The zero-config path: `<aic-ai-composer>` with inputs for mode/placeholder. Implements `ControlValueAccessor`, so it drops straight into template-driven or reactive forms.',
       },
     },
   },
@@ -26,14 +26,14 @@ const meta: Meta = {
   render: (args) => ({
     props: { ...args, editor: demoEditor({ mode: args.mode, placeholder: args.placeholder }) },
     template: `
-      <aic-prompt-editor
+      <aic-ai-composer
         [editor]="editor"
         [mode]="mode"
         [placeholder]="placeholder"
         [disabled]="disabled"
         [readonly]="readonly"
         (submitted)="onSubmit($event)"
-      ></aic-prompt-editor>
+      ></aic-ai-composer>
     `,
   }),
 };
@@ -45,7 +45,7 @@ export const Default: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<aic-prompt-editor mode="chat" placeholder="Ask anything…"></aic-prompt-editor>`,
+        code: `<aic-ai-composer mode="chat" placeholder="Ask anything…"></aic-ai-composer>`,
       },
       description: { story: 'Zero configuration. Enter submits, Shift+Enter adds a newline, the box auto-grows.' },
     },
@@ -63,7 +63,7 @@ export const SubmitFlow: Story = {
       log: [] as string[],
     },
     template: `
-      <aic-prompt-editor [editor]="editor" mode="chat" (submitted)="log = [$any(editor).serialize('text'), ...log.slice(0, 4)]"></aic-prompt-editor>
+      <aic-ai-composer [editor]="editor" mode="chat" (submitted)="log = [$any(editor).serialize('text'), ...log.slice(0, 4)]"></aic-ai-composer>
       <pre style="background:#f6f7f9;padding:12px;border-radius:8px;font-size:13px">{{ log.join('\\n') || 'press Enter…' }}</pre>
     `,
   }),
@@ -72,13 +72,13 @@ export const SubmitFlow: Story = {
       source: {
         code: `@Component({
   template: \`
-    <aic-prompt-editor [editor]="editor" mode="chat"
-                       (submitted)="onSubmit($event)"></aic-prompt-editor>
+    <aic-ai-composer [editor]="editor" mode="chat"
+                       (submitted)="onSubmit($event)"></aic-ai-composer>
   \`,
 })
 class Demo {
-  editor = createPromptEditor({ submit: { clearOnSubmit: true, onSubmit: (v) => … } });
-  onSubmit(value: PromptDocument) { /* … */ }
+  editor = createAIComposer({ submit: { clearOnSubmit: true, onSubmit: (v) => … } });
+  onSubmit(value: AIComposerDocument) { /* … */ }
 }`,
       },
     },

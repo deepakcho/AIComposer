@@ -5,25 +5,25 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
 import { defineComponent, h, ref } from 'vue';
 import { createMentionNode, createTextNode } from '@ai-composer/core';
-import { PromptEditor } from '../index';
+import { AIComposer } from '../index';
 import { createDemoEditor } from './utils';
 
 const meta: Meta = {
-  component: PromptEditor as never,
+  component: AIComposer as never,
   tags: ['autodocs'],
   title: 'AI Composer/Vue/Basic',
   parameters: {
     docs: {
       description: {
         component:
-          'The zero-config path: `<PromptEditor mode="chat" />` gives you the editable surface, caret-anchored suggestion popups, undo/redo and submit. `v-model` binds the document.',
+          'The zero-config path: `<AIComposer mode="chat" />` gives you the editable surface, caret-anchored suggestion popups, undo/redo and submit. `v-model` binds the document.',
       },
     },
   },
   args: { mode: 'chat', placeholder: 'Ask anything…' },
   render: (args) => ({
-    components: { PromptEditor },
-    setup: () => () => h(PromptEditor as never, { ...args }),
+    components: { AIComposer },
+    setup: () => () => h(AIComposer as never, { ...args }),
   }),
 };
 
@@ -33,7 +33,7 @@ type Story = StoryObj;
 export const Default: Story = {
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="chat" placeholder="Ask anything…" />' },
+      source: { code: '<AIComposer mode="chat" placeholder="Ask anything…" />' },
       description: { story: 'Zero configuration. Enter submits, Shift+Enter adds a newline, the box auto-grows.' },
     },
   },
@@ -52,7 +52,7 @@ export const InitialValue: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor
+        code: `<AIComposer
   mode="chat"
   v-model="doc"
 />`,
@@ -66,7 +66,7 @@ export const SubmitFlow: Story = {
   name: 'Submit · @submit + clearing',
   render: () =>
     defineComponent({
-      components: { PromptEditor },
+      components: { AIComposer },
       setup() {
         const log = ref<string[]>([]);
         const editor = createDemoEditor({
@@ -79,7 +79,7 @@ export const SubmitFlow: Story = {
         });
         return () =>
           h('div', [
-            h(PromptEditor as never, { editor }),
+            h(AIComposer as never, { editor }),
             h(
               'pre',
               { style: 'background:#f6f7f9;padding:12px;border-radius:8px;font-size:13px;margin:12px 0 0' },
@@ -91,7 +91,7 @@ export const SubmitFlow: Story = {
   parameters: {
     docs: {
       source: {
-        code: `<PromptEditor
+        code: `<AIComposer
   mode="chat"
   :editor="editor"
   @submit="(value) => log.unshift(editor.serialize('text'))"

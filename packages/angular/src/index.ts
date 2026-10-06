@@ -2,12 +2,12 @@
  * @ai-composer/angular — Angular adapter (standalone components + signals).
  *
  * ```html
- * <aic-prompt-editor [editor]="editor" mode="chat" placeholder="Ask anything…"
+ * <aic-ai-composer [editor]="editor" mode="chat" placeholder="Ask anything…"
  *                    (submitted)="onSubmit($event)">
  *   <div aic-header>Context</div>
- *   <aic-prompt-input />
- *   <div aic-toolbar><aic-submit-button /></div>
- * </aic-prompt-editor>
+ *   <aic-ai-composer-input />
+ *   <div aic-toolbar><aic-ai-composer-submit /></div>
+ * </aic-ai-composer>
  * ```
  */
 
@@ -29,40 +29,41 @@ import {
   SimpleChanges,
   Signal,
   computed,
+  forwardRef,
   inject,
   signal,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import {
   coerceDocument,
-  createPromptEditor,
-  isPromptEditor,
-  type PromptDocument,
-  type PromptEditor,
-  type PromptEditorOptions,
-  type PromptEditorState,
+  createAIComposer,
+  isAIComposer,
+  type AIComposerDocument,
+  type AIComposer,
+  type AIComposerOptions,
+  type AIComposerState,
 } from '@ai-composer/core';
 import { createEditableSurface, createSuggestionList } from '@ai-composer/dom';
 
-/** Per-<aic-prompt-editor> DI holder so projected children reach the editor. */
+/** Per-<aic-ai-composer> DI holder so projected children reach the editor. */
 @Injectable()
 export class AiComposerEditorHolder {
-  editor: PromptEditor | null = null;
+  editor: AIComposer | null = null;
 }
 
-/** Resolve the editor from the enclosing <aic-prompt-editor>. */
-export function injectPromptEditor(): PromptEditor {
+/** Resolve the editor from the enclosing <aic-ai-composer>. */
+export function injectAIComposer(): AIComposer {
   const holder = inject(AiComposerEditorHolder);
   if (!holder.editor) {
-    throw new Error('injectPromptEditor() must be called inside <aic-prompt-editor>');
+    throw new Error('injectAIComposer() must be called inside <aic-ai-composer>');
   }
   return holder.editor;
 }
 
 /** Live editor state as a signal (re-evaluated on every editor notify). */
-export function injectPromptState(): Signal<PromptEditorState | null> {
-  const editor = injectPromptEditor();
-  const state = signal<PromptEditorState | null>(editor.getState());
+export function injectAIComposerState(): Signal<AIComposerState | null> {
+  const editor = injectAIComposer();
+  const state = signal<AIComposerState | null>(editor.getState());
   // Cleanup rides on the root component destroying its editor.
   editor.subscribe((next) => state.set(next));
   return state.asReadonly();
@@ -73,41 +74,45 @@ export function injectPromptState(): Signal<PromptEditorState | null> {
 // ---------------------------------------------------------------------------
 
 @Directive({ selector: '[aic-header]', standalone: true })
-export class PromptHeaderDirective {}
+export class AIComposerHeaderDirective {}
 
 @Directive({ selector: '[aic-toolbar]', standalone: true })
-export class PromptToolbarDirective {}
+export class AIComposerToolbarDirective {}
 
 @Directive({ selector: '[aic-footer]', standalone: true })
-export class PromptFooterDirective {}
+export class AIComposerFooterDirective {}
 
 @Directive({ selector: '[aic-attachments]', standalone: true })
-export class PromptAttachmentsDirective {}
+export class AIComposerAttachmentsDirective {}
 
 // ---------------------------------------------------------------------------
 // Root component
 // ---------------------------------------------------------------------------
 
 @Component({
-  selector: 'aic-prompt-editor',
+  selector: 'aic-ai-composer',
   standalone: true,
+  imports: [
+    forwardRef(() => AIComposerInputComponent),
+    forwardRef(() => SubmitButtonComponent),
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     AiComposerEditorHolder,
-    { provide: NG_VALUE_ACCESSOR, multi: true, useExisting: PromptEditorComponent },
+    { provide: NG_VALUE_ACCESSOR, multi: true, useExisting: AIComposerComponent },
   ],
   template: `
     <ng-content select="[aic-header]" />
     <div class="aic-body" data-aic-slot="body">
       <ng-content select="[aic-attachments]" />
       <div class="aic-input-wrap">
-        <aic-prompt-input />
+        <aic-ai-composer-input />
       </div>
     </div>
     <ng-content select="[aic-toolbar]" />
     @if (showDefaultToolbar()) {
       <div class="aic-toolbar" data-aic-slot="toolbar">
-        <aic-submit-button />
+        <aic-ai-composer-submit />
       </div>
     }
     <ng-content select="[aic-footer]" />
@@ -119,10 +124,10 @@ export class PromptAttachmentsDirective {}
       "maxHeight === '' ? null : (typeof maxHeight === 'number' ? maxHeight + 'px' : maxHeight)",
   },
 })
-export class PromptEditorComponent implements OnInit, OnChanges, OnDestroy, ControlValueAccessor {
+export class AIComposerComponent implements OnInit, OnChanges, OnDestroy, ControlValueAccessor {
   /** External editor; when omitted one is created from `options`. */
-  @Input() editor: PromptEditor | null = null;
-  @Input() options: PromptEditorOptions | null = null;
+  @Input() editor: AIComposer | null = null;
+  @Input() options: AIComposerOptions | null = null;
   @Input() mode = 'default';
   @Input() placeholder = '';
   @Input({ transform: BooleanAttribute }) disabled = false;
@@ -130,36 +135,36 @@ export class PromptEditorComponent implements OnInit, OnChanges, OnDestroy, Cont
   /** Auto-height ceiling — px number or CSS length; scrolls after the cap. */
   @Input() maxHeight: number | string = '';
 
-  @Output() valueChange = new EventEmitter<PromptDocument>();
-  @Output() submitted = new EventEmitter<PromptDocument>();
+  @Output() valueChange = new EventEmitter<AIComposerDocument>();
+  @Output() submitted = new EventEmitter<AIComposerDocument>();
 
   /** Custom toolbar projection (suppresses the default one). */
-  @ContentChild(PromptToolbarDirective)
-  customToolbar: PromptToolbarDirective | null = null;
+  @ContentChild(AIComposerToolbarDirective)
+  customToolbar: AIComposerToolbarDirective | null = null;
 
-  readonly state = signal<PromptEditorState | null>(null);
+  readonly state = signal<AIComposerState | null>(null);
 
-  /** Default circular send button for chat/expanded (Copilot style). */
+  /** Default circular send button for compact/chat/expanded (Copilot style). */
   readonly showDefaultToolbar = computed(() => {
     const current = this.state();
     const mode = current?.mode ?? this.mode;
-    return mode !== 'compact' && !this.customToolbar;
+    return (mode === 'compact' || mode === 'chat' || mode === 'expanded') && !this.customToolbar;
   });
 
   private created = false;
-  private resolved: PromptEditor | null = null;
+  private resolved: AIComposer | null = null;
   private unsubscribe: (() => void) | null = null;
 
   constructor(@Inject(AiComposerEditorHolder) private readonly holder: AiComposerEditorHolder) {}
 
-  private get editorInstance(): PromptEditor {
+  private get editorInstance(): AIComposer {
     if (!this.resolved) throw new Error('Editor not initialized');
     return this.resolved;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!this.resolved) return;
-    const patch: Partial<PromptEditorOptions> = {};
+    const patch: Partial<AIComposerOptions> = {};
     if (changes['mode']?.currentValue) patch.mode = changes['mode'].currentValue;
     if (changes['placeholder']) patch.placeholder = changes['placeholder'].currentValue;
     if (changes['disabled']) patch.disabled = changes['disabled'].currentValue;
@@ -168,10 +173,10 @@ export class PromptEditorComponent implements OnInit, OnChanges, OnDestroy, Cont
   }
 
   ngOnInit(): void {
-    if (this.editor && isPromptEditor(this.editor)) {
+    if (this.editor && isAIComposer(this.editor)) {
       this.resolved = this.editor;
     } else {
-      this.resolved = createPromptEditor({ ...(this.options ?? {}) });
+      this.resolved = createAIComposer({ ...(this.options ?? {}) });
       this.created = true;
     }
     this.holder.editor = this.resolved;
@@ -197,7 +202,7 @@ export class PromptEditorComponent implements OnInit, OnChanges, OnDestroy, Cont
   }
 
   /** Direct access for template code: {{ editor().serialize('text') }} */
-  getEditor(): PromptEditor {
+  getEditor(): AIComposer {
     return this.editorInstance;
   }
 
@@ -205,10 +210,10 @@ export class PromptEditorComponent implements OnInit, OnChanges, OnDestroy, Cont
 
   writeValue(value: unknown): void {
     if (value === null || value === undefined) return;
-    const document = typeof value === 'string' ? value : coerceDocument(value as PromptDocument);
+    const document = typeof value === 'string' ? value : coerceDocument(value as AIComposerDocument);
     this.editorInstance.setValue(document, { source: 'api' });
   }
-  registerOnChange(fn: (value: PromptDocument) => void): void {
+  registerOnChange(fn: (value: AIComposerDocument) => void): void {
     this.editorInstance.on('change', (event) => fn(event.value));
   }
   registerOnTouched(fn: () => void): void {
@@ -229,13 +234,13 @@ function BooleanAttribute(value: unknown): boolean {
 // ---------------------------------------------------------------------------
 
 @Component({
-  selector: 'aic-prompt-input',
+  selector: 'aic-ai-composer-input',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
   host: { class: 'aic-input-host', 'data-aic-slot': 'input' },
 })
-export class PromptInputComponent implements AfterViewInit, OnDestroy {
+export class AIComposerInputComponent implements AfterViewInit, OnDestroy {
   private readonly holder = inject(AiComposerEditorHolder, { optional: true });
   private surface: ReturnType<typeof createEditableSurface> | null = null;
   private list: ReturnType<typeof createSuggestionList> | null = null;
@@ -264,7 +269,7 @@ export class PromptInputComponent implements AfterViewInit, OnDestroy {
 // ---------------------------------------------------------------------------
 
 @Component({
-  selector: 'aic-submit-button',
+  selector: 'aic-ai-composer-submit',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<button
@@ -274,12 +279,20 @@ export class PromptInputComponent implements AfterViewInit, OnDestroy {
     aria-label="Send"
     [disabled]="!canSubmit()"
     (click)="submit()"
-  >{{ label() }}</button>`,
+  >
+    @if (state()?.submitting) {
+      <span class="aic-spinner" aria-hidden="true"></span>
+    } @else {
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+      </svg>
+    }
+  </button>`,
 })
 export class SubmitButtonComponent {
-  private readonly editor = injectPromptEditor();
-  private readonly state = injectPromptState();
-  readonly label = computed(() => (this.state()?.submitting ? '…' : '↑'));
+  private readonly editor = injectAIComposer();
+  private readonly state = injectAIComposerState();
   readonly canSubmit = computed(() => {
     const state = this.state();
     if (!state) return false;
@@ -293,11 +306,11 @@ export class SubmitButtonComponent {
 
 /** Convenience import collection. */
 export const AI_COMPOSER_IMPORTS = [
-  PromptEditorComponent,
-  PromptInputComponent,
+  AIComposerComponent,
+  AIComposerInputComponent,
   SubmitButtonComponent,
-  PromptHeaderDirective,
-  PromptToolbarDirective,
-  PromptFooterDirective,
-  PromptAttachmentsDirective,
+  AIComposerHeaderDirective,
+  AIComposerToolbarDirective,
+  AIComposerFooterDirective,
+  AIComposerAttachmentsDirective,
 ] as const;

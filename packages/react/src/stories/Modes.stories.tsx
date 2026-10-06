@@ -6,12 +6,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { createAttachmentNode, createTextNode } from '@ai-composer/core';
-import { createPromptEditor } from '@ai-composer/core';
-import { PromptEditor } from '../index';
+import { createAIComposer } from '@ai-composer/core';
+import { AIComposer } from '../index';
 import { createDemoEditor } from './utils';
 
-const meta: Meta<typeof PromptEditor> = {
-  component: PromptEditor,
+const meta: Meta<typeof AIComposer> = {
+  component: AIComposer,
   tags: ['autodocs'],
   title: 'AI Composer/React/Modes',
   parameters: {
@@ -25,13 +25,13 @@ const meta: Meta<typeof PromptEditor> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof PromptEditor>;
+type Story = StoryObj<typeof AIComposer>;
 
 export const Compact: Story = {
   args: { mode: 'compact', placeholder: 'Search or ask…' },
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="compact" placeholder="Search or ask…" />' },
+      source: { code: '<AIComposer mode="compact" placeholder="Search or ask…" />' },
       description: { story: 'Inline pill while single-line. Wrapped or multiline content is detected (`data-aic-multiline`) — the pill morphs into a rounded box, auto-grows up to the cap, then scrolls. Never clips text.' },
     },
   },
@@ -44,11 +44,11 @@ export const MaxHeight: Story = {
     docs: {
       source: {
         code: `<!-- prop (px or any CSS length) -->
-<PromptEditor mode="chat" maxHeight={96} />
+<AIComposer mode="chat" maxHeight={96} />
 
 <!-- or the underlying token, from anywhere -->
 <div style="--aic-input-max-height: 40vh">
-  <PromptEditor mode="chat" />
+  <AIComposer mode="chat" />
 </div>`,
       },
       description: { story: 'The box auto-grows with content up to the ceiling, then scrolls inside. Defaults per mode: compact 120px · chat 200px (viewport-aware) · expanded 60vh.' },
@@ -63,17 +63,17 @@ export const CompactWithAttachments: Story = {
     docs: {
       source: {
         code: `const [editor] = useState(() =>
-  createPromptEditor({
+  createAIComposer({
     mode: 'compact',
     value: {
       nodes: [
-        createAttachmentNode({ name: 'screenshot.png' }),
+        createAttachmentNode({ id: 'a1', name: 'screenshot.png', mimeType: 'image/png' }),
         createTextNode(' this look right?'),
       ],
     },
   }),
 );
-<PromptEditor editor={editor} mode="compact" />`,
+<AIComposer editor={editor} mode="compact" />`,
       },
       description: { story: 'Attachment chips (and header/footer/toolbar slots) are projectable in every mode — presets shape defaults, never forbid content.' },
     },
@@ -82,32 +82,35 @@ export const CompactWithAttachments: Story = {
 
 function CompactAttachmentsDemo(): JSX.Element {
   const [editor] = useState(() =>
-    createPromptEditor({
+    createAIComposer({
       mode: 'compact',
       placeholder: 'Search or ask…',
       value: {
-        nodes: [createAttachmentNode({ name: 'screenshot.png' }), createTextNode(' does this look right?')],
+        nodes: [
+          createAttachmentNode({ id: 'a1', name: 'screenshot.png', mimeType: 'image/png' }),
+          createTextNode(' does this look right?'),
+        ],
       },
     }),
   );
-  return <PromptEditor editor={editor} mode="compact" />;
+  return <AIComposer editor={editor} mode="compact" />;
 }
 
 export const Chat: Story = {
   args: { mode: 'chat', placeholder: 'Ask anything…' },
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="chat" placeholder="Ask anything…" />' },
+      source: { code: '<AIComposer mode="chat" placeholder="Ask anything…" />' },
       description: { story: 'Auto-growing box (28px → 200px), then scrolls inside. Circular send button.' },
     },
   },
 };
 
 export const Expanded: Story = {
-  args: { mode: 'expanded', placeholder: 'Write a long, detailed prompt…' },
+  args: { mode: 'expanded', placeholder: 'Write a detailed draft…' },
   parameters: {
     docs: {
-      source: { code: '<PromptEditor mode="expanded" placeholder="Write a long, detailed prompt…" />' },
+      source: { code: '<AIComposer mode="expanded" placeholder="Write a detailed draft…" />' },
       description: { story: 'Tall canvas with undo/redo/send toolbar. Enter adds a newline; Shift+Enter submits.' },
     },
   },
@@ -122,7 +125,7 @@ export const LiveSwitch: Story = {
         code: `const [editor] = useState(() => createDemoEditor());
 const [mode, setMode] = useState<'compact' | 'chat' | 'expanded'>('chat');
 
-<PromptEditor editor={editor} mode={mode} placeholder="Draft survives switching…" />
+<AIComposer editor={editor} mode={mode} placeholder="Draft survives switching…" />
 {(['compact', 'chat', 'expanded'] as const).map((m) => (
   <button key={m} aria-pressed={mode === m} onClick={() => setMode(m)}>{m}</button>
 ))}`,
@@ -156,7 +159,7 @@ function ModeSwitchDemo(): JSX.Element {
           </button>
         ))}
       </div>
-      <PromptEditor editor={editor} mode={mode} />
+      <AIComposer editor={editor} mode={mode} />
     </div>
   );
 }

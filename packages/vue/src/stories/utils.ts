@@ -1,9 +1,9 @@
 /** Shared fixtures for Vue stories. */
 
 import {
-  createPromptEditor,
-  type PromptEditor,
-  type PromptEditorOptions,
+  createAIComposer,
+  type AIComposer,
+  type AIComposerOptions,
   type SuggestionItem,
 } from '@ai-composer/core';
 
@@ -15,13 +15,13 @@ export const people: SuggestionItem[] = [
 
 export const slashCommands = [
   { id: 'summarize', label: 'Summarize', description: 'Summarize the conversation' },
-  { id: 'translate', label: 'Translate', description: 'Translate the prompt' },
+  { id: 'translate', label: 'Translate', description: 'Translate the draft' },
   { id: 'explain', label: 'Explain', description: 'Explain the selected code' },
   { id: 'reset', label: 'Reset draft', description: 'Clear the composer' },
 ];
 
-export function createDemoEditor(options: PromptEditorOptions = {}): PromptEditor {
-  return createPromptEditor({
+export function createDemoEditor(options: AIComposerOptions = {}): AIComposer {
+  return createAIComposer({
     placeholder: options.placeholder ?? 'Ask anything… try @mentions and /commands',
     ...options,
     plugins: [

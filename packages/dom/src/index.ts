@@ -7,7 +7,7 @@
  *   selection   DOM selection ↔ model selection mapping
  *   suggestions accessible suggestion listbox driven by state
  *   template    structural mode presets (compact/default/chat/expanded)
- *   mount       vanilla JS mountPromptEditor()
+ *   mount       vanilla JS mountAIComposer()
  */
 
 export {
@@ -40,11 +40,11 @@ export {
   registerTemplate,
   SLOT_ATTRIBUTE,
   templateForMode,
-  type PromptDomTemplate,
+  type AIComposerDomTemplate,
   type TemplateSlotName,
 } from './template';
 export {
-  mountPromptEditor,
+  mountAIComposer,
   type MountedEditor,
   type MountOptions,
 } from './mount';

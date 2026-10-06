@@ -4,8 +4,8 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { createPromptEditor } from '@ai-composer/core';
-import { mountPromptEditor } from '@ai-composer/dom';
+import { createAIComposer } from '@ai-composer/core';
+import { mountAIComposer } from '@ai-composer/dom';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
 import { defineAiComposerEditor } from '../index';
 
@@ -29,28 +29,26 @@ type Story = StoryObj<typeof meta>;
 
 export const Events: Story = {
   name: 'Events · aic-change / aic-submit',
-  render: () => ({
-    template: `
-      <div>
-        <ai-composer-editor id="events-demo" mode="chat" placeholder="Type and press Enter…"></ai-composer-editor>
-        <pre id="events-log" style="background:#f6f7f9;padding:12px;border-radius:8px;font-size:13px">—</pre>
-      </div>
-    `,
-    effects: [
-      {
-        selector: '#events-demo',
-        setup: (element: HTMLElement) => {
-          const log = document.querySelector('#events-log')!;
-          const editor = (element as unknown as { editor: ReturnType<typeof createPromptEditor> }).editor;
-          const write = (line: string): void => {
-            log.textContent = `${line}\n${log.textContent}`;
-          };
-          element.addEventListener('aic-change', () => write(`change → ${editor.serialize('text')}`));
-          element.addEventListener('aic-submit', () => write(`submit → ${JSON.stringify(editor.serialize('ai'))}`));
-        },
-      },
-    ],
-  }),
+  render: () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <ai-composer-editor mode="chat" placeholder="Type and press Enter…"></ai-composer-editor>
+      <pre style="background:#f6f7f9;padding:12px;border-radius:8px;font-size:13px">—</pre>
+    `;
+    const element = root.querySelector('ai-composer-editor')!;
+    const log = root.querySelector('pre')!;
+    const write = (line: string): void => {
+      log.textContent = `${line}\n${log.textContent}`;
+    };
+    element.addEventListener('aic-change', () => {
+      const editor = (element as unknown as { editor: ReturnType<typeof createAIComposer> }).editor;
+      write(`change → ${editor.serialize('text')}`);
+    });
+    element.addEventListener('aic-submit', (event) => {
+      write(`submit → ${JSON.stringify((event as CustomEvent).detail)}`);
+    });
+    return root;
+  },
   parameters: {
     docs: {
       source: {
@@ -63,52 +61,46 @@ el.addEventListener('aic-submit', (e) => console.log(e.detail));`,
 };
 
 export const VanillaJsMount: Story = {
-  name: 'Vanilla JS · mountPromptEditor()',
-  render: () => ({
-    template: `
-      <div>
-        <div id="vanilla-mount" style="max-width:640px"></div>
-        <pre id="vanilla-output" style="background:#f6f7f9;padding:12px;border-radius:8px;font-size:13px">—</pre>
-      </div>
-    `,
-    effects: [
-      {
-        selector: '#vanilla-mount',
-        setup: (container: HTMLElement) => {
-          const editor = createPromptEditor({
-            mode: 'chat',
-            placeholder: 'Vanilla JS — no framework at all',
-            plugins: [
-              mentionPlugin({ items: [{ id: 'u1', label: 'Ada Lovelace', description: 'Engineering' }] }),
-            ],
-          });
-          mountPromptEditor(container, editor, { mode: 'chat' });
-          const output = document.querySelector('#vanilla-output')!;
-          editor.subscribe((state) => {
-            output.textContent = JSON.stringify(
-              { text: editor.serialize('text'), canUndo: state.canUndo, mode: state.mode },
-              null,
-              2,
-            );
-          });
-        },
-      },
-    ],
-  }),
+  name: 'Vanilla JS · mountAIComposer()',
+  render: () => {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <div style="max-width:640px"></div>
+      <pre style="background:#f6f7f9;padding:12px;border-radius:8px;font-size:13px">—</pre>
+    `;
+    const container = root.querySelector('div')!;
+    const output = root.querySelector('pre')!;
+    const editor = createAIComposer({
+      mode: 'chat',
+      placeholder: 'Vanilla JS — no framework at all',
+      plugins: [
+        mentionPlugin({ items: [{ id: 'u1', label: 'Ada Lovelace', description: 'Engineering' }] }),
+      ],
+    });
+    mountAIComposer(container, editor, { mode: 'chat' });
+    editor.subscribe((state) => {
+      output.textContent = JSON.stringify(
+        { text: editor.serialize('text'), canUndo: state.canUndo, mode: state.mode },
+        null,
+        2,
+      );
+    });
+    return root;
+  },
   parameters: {
     docs: {
       source: {
-        code: `import { createPromptEditor } from '@ai-composer/core';
-import { mountPromptEditor } from '@ai-composer/dom';
+        code: `import { createAIComposer } from '@ai-composer/core';
+import { mountAIComposer } from '@ai-composer/dom';
 import '@ai-composer/themes/css/tokens.css';
 import '@ai-composer/themes/css/default.css';
 
-const editor = createPromptEditor({
+const editor = createAIComposer({
   mode: 'chat',
   plugins: [mentionPlugin({ items: people })],
 });
 
-mountPromptEditor(document.querySelector('#composer'), editor, { mode: 'chat' });`,
+mountAIComposer(document.querySelector('#composer'), editor, { mode: 'chat' });`,
       },
       description: { story: 'core + dom only — no adapter, no framework. Live state panel shows the model-first document.' },
     },

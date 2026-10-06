@@ -1,14 +1,14 @@
 /**
  * DOM → model parsing with strict sanitization: only elements we generate
  * (data-aic-node chips) survive as structured nodes — everything else is
- * flattened to plain text (see ADR "Security" and docs/api/09-serialization).
+ * flattened to plain text (see the serialization ADR).
  */
 
 import {
   createDocument,
   createNodeKey,
   type NodeRegistry,
-  type PromptNode,
+  type AIComposerNode,
   type TextNode,
 } from '@ai-composer/core';
 
@@ -21,7 +21,7 @@ function textNode(text: string, previous?: TextNode): TextNode {
 
 /** Parse the editable host back into a document. Never trusts markup: unknown nodes collapse to text. */
 export function parseEditableHost(host: HTMLElement, registry: NodeRegistry): ReturnType<typeof createDocument> {
-  const nodes: PromptNode[] = [];
+  const nodes: AIComposerNode[] = [];
 
   const appendText = (text: string): void => {
     if (!text) return;
@@ -60,7 +60,7 @@ export function parseEditableHost(host: HTMLElement, registry: NodeRegistry): Re
   return createDocument(nodes);
 }
 
-function chipFromElement(element: HTMLElement, type: string, registry: NodeRegistry): PromptNode | null {
+function chipFromElement(element: HTMLElement, type: string, registry: NodeRegistry): AIComposerNode | null {
   if (!registry.has(type)) return null;
   const key = element.getAttribute('data-aic-key') ?? createNodeKey(type);
   const attr = (name: string): string | null => element.getAttribute(`data-aic-${name}`);

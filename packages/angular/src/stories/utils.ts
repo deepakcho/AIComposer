@@ -1,9 +1,9 @@
 /** Shared fixtures for Angular stories. */
 
-import { createPromptEditor, type PromptEditor, type PromptEditorOptions } from '@ai-composer/core';
+import { createAIComposer, type AIComposer, type AIComposerOptions } from '@ai-composer/core';
 
-export function demoEditor(options: PromptEditorOptions = {}): PromptEditor {
-  return createPromptEditor({
+export function demoEditor(options: AIComposerOptions = {}): AIComposer {
+  return createAIComposer({
     placeholder: options.placeholder ?? 'Ask anything… try @mentions and /commands',
     ...options,
     plugins: [
@@ -31,7 +31,7 @@ export function demoEditor(options: PromptEditorOptions = {}): PromptEditor {
             type: 'command',
             search: () => [
               { id: 'summarize', label: 'Summarize', description: 'Summarize the conversation' },
-              { id: 'translate', label: 'Translate', description: 'Translate the prompt' },
+              { id: 'translate', label: 'Translate', description: 'Translate the draft' },
             ],
           },
         ],

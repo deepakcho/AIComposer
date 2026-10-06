@@ -25,16 +25,14 @@ const meta: Meta = {
     readonly: { control: 'boolean' },
   },
   args: { mode: 'chat', placeholder: 'Ask anything…', disabled: false, readonly: false },
-  render: (args) => ({
-    template: `
-      <ai-composer-editor
-        mode="${args.mode}"
-        placeholder="${args.placeholder}"
-        ${args.disabled ? 'disabled' : ''}
-        ${args.readonly ? 'readonly' : ''}
-      ></ai-composer-editor>
-    `,
-  }),
+  render: (args) => {
+    const element = document.createElement('ai-composer-editor');
+    element.setAttribute('mode', args.mode);
+    element.setAttribute('placeholder', args.placeholder);
+    if (args.disabled) element.setAttribute('disabled', '');
+    if (args.readonly) element.setAttribute('readonly', '');
+    return element;
+  },
 };
 
 export default meta;

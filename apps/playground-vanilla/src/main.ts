@@ -2,8 +2,8 @@ import '@ai-composer/themes/css/tokens.css';
 import '@ai-composer/themes/css/default.css';
 import '@ai-composer/themes/css/dark.css';
 import './style.css';
-import { createPromptEditor } from '@ai-composer/core';
-import { mountPromptEditor } from '@ai-composer/dom';
+import { createAIComposer, createAttachmentNode } from '@ai-composer/core';
+import { mountAIComposer } from '@ai-composer/dom';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
 import { commandPlugin } from '@ai-composer/plugin-command';
 
@@ -13,7 +13,7 @@ const people = [
   { id: 'u3', label: 'Alan Turing', description: 'Research' },
 ];
 
-const editor = createPromptEditor({
+const editor = createAIComposer({
   mode: 'chat',
   placeholder: 'Ask anything… try @mentions and /commands',
   submit: {
@@ -28,7 +28,7 @@ const editor = createPromptEditor({
     commandPlugin({
       commands: [
         { id: 'summarize', label: 'Summarize', description: 'Summarize the conversation' },
-        { id: 'translate', label: 'Translate', description: 'Translate the prompt' },
+        { id: 'translate', label: 'Translate', description: 'Translate the draft' },
         { id: 'reset', label: 'Reset draft', run: (e) => e.clear() },
       ],
     }),
@@ -36,7 +36,7 @@ const editor = createPromptEditor({
 });
 
 const container = document.querySelector<HTMLElement>('#composer')!;
-mountPromptEditor(container, editor, {
+mountAIComposer(container, editor, {
   mode: 'chat',
   renderSuggestionItem: (item, active) => {
     const li = document.createElement('li');
@@ -72,6 +72,22 @@ const render = (): void => {
 };
 editor.subscribe(render);
 render();
+
+// Dev aid: drive the demo from the console (e.g. addAttachment below).
+declare global {
+  interface Window {
+    __aic: {
+      editor: typeof editor;
+      addAttachment: (name: string) => void;
+    };
+  }
+}
+window.__aic = {
+  editor,
+  addAttachment: (name: string) => {
+    editor.insertNode(createAttachmentNode({ name }));
+  },
+};
 
 // Mode switching is live: same editor instance, draft/focus/undo preserved.
 document.querySelector('#mode')!.addEventListener('change', (event) => {

@@ -4,16 +4,16 @@
  */
 
 import type { Unsubscribe } from '../events/event-bus';
-import type { PromptEditor } from '../editor';
-import type { PromptEditorState } from '../state/state';
+import type { AIComposer } from '../editor';
+import type { AIComposerState } from '../state/state';
 
 export interface CommandContext {
-  editor: PromptEditor;
-  state: PromptEditorState;
+  editor: AIComposer;
+  state: AIComposerState;
   payload?: unknown;
 }
 
-export interface PromptCommand {
+export interface AIComposerCommand {
   id: string;
   label?: string;
   execute(context: CommandContext): void | Promise<void>;
@@ -21,15 +21,15 @@ export interface PromptCommand {
 }
 
 export interface CommandRegistry {
-  register(command: PromptCommand): Unsubscribe;
-  get(id: string): PromptCommand | undefined;
+  register(command: AIComposerCommand): Unsubscribe;
+  get(id: string): AIComposerCommand | undefined;
   has(id: string): boolean;
-  list(): PromptCommand[];
+  list(): AIComposerCommand[];
   clear(): void;
 }
 
 export function createCommandRegistry(): CommandRegistry {
-  const commands = new Map<string, PromptCommand>();
+  const commands = new Map<string, AIComposerCommand>();
   return {
     register(command) {
       commands.set(command.id, command);

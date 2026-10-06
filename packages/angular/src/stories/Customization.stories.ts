@@ -27,7 +27,7 @@ export const CustomProjection: Story = {
   render: () => ({
     props: { editor: demoEditor({ mode: 'chat', placeholder: 'Custom layout…' }) },
     template: `
-      <aic-prompt-editor [editor]="editor" mode="chat" placeholder="Custom layout…">
+      <aic-ai-composer [editor]="editor" mode="chat" placeholder="Custom layout…">
         <div aic-header><strong>Context:</strong> invoice #9021</div>
         <div aic-toolbar>
           <button type="button" (click)="editor.executeCommand('undo')">↺</button>
@@ -35,20 +35,20 @@ export const CustomProjection: Story = {
           <button type="button" (click)="editor.submit()">Submit</button>
         </div>
         <div aic-footer>One engine, any framework.</div>
-      </aic-prompt-editor>
+      </aic-ai-composer>
     `,
   }),
   parameters: {
     docs: {
       source: {
-        code: `<aic-prompt-editor [editor]="editor" mode="chat">
+        code: `<aic-ai-composer [editor]="editor" mode="chat">
   <div aic-header><strong>Context:</strong> invoice #9021</div>
   <div aic-toolbar>
     <button (click)="editor.executeCommand('undo')">↺</button>
     <button (click)="editor.submit()">Submit</button>
   </div>
   <div aic-footer>One engine, any framework.</div>
-</aic-prompt-editor>`,
+</aic-ai-composer>`,
       },
     },
   },
@@ -57,11 +57,11 @@ export const CustomProjection: Story = {
 export const ReactiveForm: Story = {
   name: 'Reactive forms · ControlValueAccessor',
   render: () => ({
-    props: { prompt: new FormControl('Typed via form control') },
+    props: { composerValue: new FormControl('Typed via form control') },
     moduleMetadata: { imports: [ReactiveFormsModule] },
     template: `
-      <aic-prompt-editor [formControl]="prompt" mode="compact"></aic-prompt-editor>
-      <p>Form value: <code>{{ prompt.value }}</code></p>
+      <aic-ai-composer [formControl]="composerValue" mode="compact"></aic-ai-composer>
+      <p>Form value: <code>{{ composerValue.value }}</code></p>
     `,
   }),
   parameters: {
@@ -70,12 +70,12 @@ export const ReactiveForm: Story = {
         code: `@Component({
   imports: [ReactiveFormsModule],
   template: \`
-    <aic-prompt-editor [formControl]="prompt" mode="compact"></aic-prompt-editor>
-    <p>Form value: {{ prompt.value }}</p>
+    <aic-ai-composer [formControl]="composerValue" mode="compact"></aic-ai-composer>
+    <p>Form value: {{ composerValue.value }}</p>
   \`,
 })
 class Demo {
-  prompt = new FormControl('');
+  composerValue = new FormControl('');
 }`,
       },
     },

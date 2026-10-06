@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp, defineComponent, h, nextTick } from 'vue';
-import { createPromptEditor } from '@ai-composer/core';
-import { definePromptEditorContractSuite } from '@ai-composer/testing';
-import { PromptEditor, PromptInput, PromptToolbar } from './index';
+import { createAIComposer } from '@ai-composer/core';
+import { defineAIComposerContractSuite } from '@ai-composer/testing';
+import { AIComposer, AIComposerInput, AIComposerToolbar } from './index';
 
 let host: HTMLDivElement | null = null;
 
@@ -20,11 +20,11 @@ afterEach(() => {
   host = null;
 });
 
-describe('PromptEditor (Vue)', () => {
+describe('AIComposer (Vue)', () => {
   it('renders with mode attributes and placeholder', async () => {
     await mount(
       defineComponent({
-        render: () => h(PromptEditor, { mode: 'chat', placeholder: 'Ask anything…' }),
+        render: () => h(AIComposer, { mode: 'chat', placeholder: 'Ask anything…' }),
       }),
     );
     const rootEl = host!.querySelector('.aic-root');
@@ -35,11 +35,11 @@ describe('PromptEditor (Vue)', () => {
   });
 
   it('typing through the Vue-mounted surface updates the model', async () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     await mount(
       defineComponent({
         render: () =>
-          h(PromptEditor, { editor }, { default: () => [h(PromptInput)] }),
+          h(AIComposer, { editor }, { default: () => [h(AIComposerInput)] }),
       }),
     );
     const input = host!.querySelector<HTMLElement>('[data-aic-input]');
@@ -49,13 +49,13 @@ describe('PromptEditor (Vue)', () => {
   });
 
   it('emits submit via the default toolbar', async () => {
-    const editor = createPromptEditor({ value: 'ping' });
+    const editor = createAIComposer({ value: 'ping' });
     const submitted = vi.fn();
     await mount(
       defineComponent({
         render: () =>
-          h(PromptEditor, { editor, onSubmit: submitted }, {
-            default: () => [h(PromptInput), h(PromptToolbar)],
+          h(AIComposer, { editor, onSubmit: submitted }, {
+            default: () => [h(AIComposerInput), h(AIComposerToolbar)],
           }),
       }),
     );
@@ -65,6 +65,6 @@ describe('PromptEditor (Vue)', () => {
   });
 });
 
-definePromptEditorContractSuite((options) => createPromptEditor(options), {
-  title: 'PromptEditor contract (vue package, headless reference)',
+defineAIComposerContractSuite((options) => createAIComposer(options), {
+  title: 'AIComposer contract (vue package, headless reference)',
 });

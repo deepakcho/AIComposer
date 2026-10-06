@@ -1,7 +1,7 @@
 /**
- * The editor engine (ADR-0001). `PromptEditor` is the public, framework-neutral
- * contract implemented by `PromptEditorImpl` and created via
- * `createPromptEditor()`. It owns the document, selection, state, history,
+ * The editor engine (ADR-0001). `AIComposer` is the public, framework-neutral
+ * contract implemented by `AIComposerImpl` and created via
+ * `createAIComposer()`. It owns the document, selection, state, history,
  * registries and the trigger engine — but no DOM.
  */
 
@@ -9,9 +9,9 @@ import { createEventBus, type Unsubscribe } from './events/event-bus';
 import type {
   BeforeSubmitEvent,
   ChangeSource,
-  PromptEditorBus,
-  PromptEditorEventMap,
-  PromptEditorEventType,
+  AIComposerBus,
+  AIComposerEventMap,
+  AIComposerEventType,
   TriggerCloseReason,
 } from './events/events';
 import {
@@ -24,13 +24,13 @@ import {
   isEmptyDocument,
   normalizeNodes,
   sanitizeDocument,
-  type PromptDocument,
+  type AIComposerDocument,
 } from './model/document';
 import {
   createTextNode,
   ensureNodeKey,
   type AttachmentNode,
-  type PromptNode,
+  type AIComposerNode,
 } from './model/nodes';
 import {
   clampSelection,
@@ -44,14 +44,14 @@ import {
   type Position,
   type SelectionState,
 } from './model/selection';
-import type { PromptEditorState, SuggestionItem, TriggerState } from './state/state';
-import { createCommandRegistry, type CommandRegistry, type PromptCommand } from './commands/registry';
+import type { AIComposerState, SuggestionItem, TriggerState } from './state/state';
+import { createCommandRegistry, type CommandRegistry, type AIComposerCommand } from './commands/registry';
 import { createBuiltinCommands } from './commands/builtins';
 import { createDefaultNodeRegistry, type NodeDefinition, type NodeRegistry } from './nodes/registry';
 import {
   TriggerEngine,
   createTriggerRegistry,
-  type PromptTrigger,
+  type AIComposerTrigger,
   type TriggerHost,
   type TriggerRegistry,
 } from './triggers/engine';
@@ -60,7 +60,7 @@ import {
   createPluginRegistry,
   type PluginContext,
   type PluginRegistry,
-  type PromptPlugin,
+  type AIComposerPlugin,
 } from './plugins/registry';
 import {
   createDefaultSerializers,
@@ -69,8 +69,8 @@ import {
   type Serializer,
   type SerializerRegistry,
 } from './serialization/index';
-import { ErrorCode, PromptEditorError } from './errors';
-import type { PromptEditorConfig, PromptEditorOptions } from './types';
+import { ErrorCode, AIComposerError } from './errors';
+import type { AIComposerConfig, AIComposerOptions } from './types';
 
 /** Optional DOM/view handle attached by the DOM layer or an adapter. */
 export interface EditorView {
@@ -107,26 +107,26 @@ interface MutationOptions {
   merge: boolean;
 }
 
-export type StateListener = (state: PromptEditorState) => void;
+export type StateListener = (state: AIComposerState) => void;
 
 /**
  * Public editor contract. Stable across framework adapters — if a method makes
  * sense without a browser, it belongs here, not in an adapter.
  */
-export interface PromptEditor {
+export interface AIComposer {
   // -- value ---------------------------------------------------------------
-  getValue(): PromptDocument;
-  setValue(value: PromptDocument | PromptNode[] | string, options?: SetValueOptions): void;
+  getValue(): AIComposerDocument;
+  setValue(value: AIComposerDocument | AIComposerNode[] | string, options?: SetValueOptions): void;
   clear(): void;
   /** Replace a range with nodes in a single history step. */
-  replaceRange(range: DocumentRange, nodes: PromptNode[], options?: { trailingSpace?: boolean; source?: ChangeSource }): void;
+  replaceRange(range: DocumentRange, nodes: AIComposerNode[], options?: { trailingSpace?: boolean; source?: ChangeSource }): void;
 
   // -- nodes ---------------------------------------------------------------
   insertText(text: string, at?: Position): void;
-  insertNode(node: PromptNode, options?: InsertNodeOptions): void;
+  insertNode(node: AIComposerNode, options?: InsertNodeOptions): void;
   removeNode(key: string): void;
   /** Reconcile a document parsed from the view (user typing). View-layer API. */
-  applyViewUpdate(next: PromptDocument, selection?: SelectionState): void;
+  applyViewUpdate(next: AIComposerDocument, selection?: SelectionState): void;
 
   // -- selection -----------------------------------------------------------
   getSelection(): SelectionState;
@@ -169,24 +169,24 @@ export interface PromptEditor {
   readonly nodes: NodeRegistry;
   readonly serializers: SerializerRegistry;
   readonly pluginRegistry: PluginRegistry;
-  registerPlugin(plugin: PromptPlugin): Unsubscribe;
-  registerTrigger(trigger: PromptTrigger): Unsubscribe;
-  registerCommand(command: PromptCommand): Unsubscribe;
+  registerPlugin(plugin: AIComposerPlugin): Unsubscribe;
+  registerTrigger(trigger: AIComposerTrigger): Unsubscribe;
+  registerCommand(command: AIComposerCommand): Unsubscribe;
   registerNodeType(definition: NodeDefinition): Unsubscribe;
   registerSerializer(serializer: Serializer): Unsubscribe;
 
   // -- events --------------------------------------------------------------
-  on<K extends PromptEditorEventType>(type: K, handler: (event: PromptEditorEventMap[K]) => void): Unsubscribe;
-  once<K extends PromptEditorEventType>(type: K, handler: (event: PromptEditorEventMap[K]) => void): Unsubscribe;
-  off<K extends PromptEditorEventType>(type: K, handler: (event: PromptEditorEventMap[K]) => void): void;
+  on<K extends AIComposerEventType>(type: K, handler: (event: AIComposerEventMap[K]) => void): Unsubscribe;
+  once<K extends AIComposerEventType>(type: K, handler: (event: AIComposerEventMap[K]) => void): Unsubscribe;
+  off<K extends AIComposerEventType>(type: K, handler: (event: AIComposerEventMap[K]) => void): void;
 
   // -- state ---------------------------------------------------------------
-  getState(): PromptEditorState;
+  getState(): AIComposerState;
   subscribe(listener: StateListener): Unsubscribe;
 
   // -- config --------------------------------------------------------------
-  getConfig(): PromptEditorConfig;
-  configure(patch: Partial<PromptEditorOptions>): void;
+  getConfig(): AIComposerConfig;
+  configure(patch: Partial<AIComposerOptions>): void;
   setMode(mode: string): void;
   setDisabled(disabled: boolean): void;
   setReadonly(readonly: boolean): void;
@@ -195,8 +195,8 @@ export interface PromptEditor {
   serialize(format: SerializationFormat): unknown;
 }
 
-export class PromptEditorImpl implements PromptEditor {
-  readonly events: PromptEditorBus = createEventBus<PromptEditorEventMap>();
+export class AIComposerImpl implements AIComposer {
+  readonly events: AIComposerBus = createEventBus<AIComposerEventMap>();
   readonly commands: CommandRegistry = createCommandRegistry();
   readonly triggers: TriggerRegistry = createTriggerRegistry();
   readonly nodes: NodeRegistry = createDefaultNodeRegistry();
@@ -206,8 +206,8 @@ export class PromptEditorImpl implements PromptEditor {
   private readonly triggerEngine: TriggerEngine;
   private readonly history: EditorHistory;
 
-  private config: PromptEditorConfig;
-  private document: PromptDocument;
+  private config: AIComposerConfig;
+  private document: AIComposerDocument;
   private selection: SelectionState = createSelection();
   private focused = false;
   private submitting = false;
@@ -215,9 +215,9 @@ export class PromptEditorImpl implements PromptEditor {
   private mutationDepth = 0;
   private view: EditorView | null = null;
   private stateListeners = new Set<StateListener>();
-  private stateCache: PromptEditorState | null = null;
+  private stateCache: AIComposerState | null = null;
 
-  constructor(options: PromptEditorOptions = {}) {
+  constructor(options: AIComposerOptions = {}) {
     this.config = {
       mode: options.mode ?? 'default',
       placeholder: options.placeholder ?? '',
@@ -253,11 +253,11 @@ export class PromptEditorImpl implements PromptEditor {
 
   // -- value ---------------------------------------------------------------
 
-  getValue(): PromptDocument {
+  getValue(): AIComposerDocument {
     return this.document;
   }
 
-  setValue(value: PromptDocument | PromptNode[] | string, options: SetValueOptions = {}): void {
+  setValue(value: AIComposerDocument | AIComposerNode[] | string, options: SetValueOptions = {}): void {
     this.assertAlive();
     const next = coerceDocument(value);
     this.mutate(
@@ -280,7 +280,7 @@ export class PromptEditorImpl implements PromptEditor {
 
   replaceRange(
     range: DocumentRange,
-    nodes: PromptNode[],
+    nodes: AIComposerNode[],
     options: { trailingSpace?: boolean; source?: ChangeSource } = {},
   ): void {
     this.assertAlive();
@@ -313,7 +313,7 @@ export class PromptEditorImpl implements PromptEditor {
     );
   }
 
-  insertNode(node: PromptNode, options: InsertNodeOptions = {}): void {
+  insertNode(node: AIComposerNode, options: InsertNodeOptions = {}): void {
     this.assertAlive();
     const prepared = ensureNodeKey(node);
     this.mutate(
@@ -359,7 +359,7 @@ export class PromptEditorImpl implements PromptEditor {
     }
   }
 
-  applyViewUpdate(next: PromptDocument, selection?: SelectionState): void {
+  applyViewUpdate(next: AIComposerDocument, selection?: SelectionState): void {
     this.assertAlive();
     if (documentsEqual(this.document, next)) {
       if (selection && !equalsSelection(clampSelection(next, selection), this.selection)) {
@@ -523,9 +523,9 @@ export class PromptEditorImpl implements PromptEditor {
     this.assertAlive();
     const command = this.commands.get(id);
     if (!command) {
-      throw new PromptEditorError('UNKNOWN_COMMAND', `No command registered for "${id}"`);
+      throw new AIComposerError('UNKNOWN_COMMAND', `No command registered for "${id}"`);
     }
-    const context = { editor: this as PromptEditor, state: this.getState(), payload };
+    const context = { editor: this as AIComposer, state: this.getState(), payload };
     if (command.canExecute && !command.canExecute(context)) return;
     this.events.emit('commandExecute', { id, payload });
     await command.execute(context);
@@ -534,7 +534,7 @@ export class PromptEditorImpl implements PromptEditor {
   canExecuteCommand(id: string, payload?: unknown): boolean {
     const command = this.commands.get(id);
     if (!command) return false;
-    const context = { editor: this as PromptEditor, state: this.getState(), payload };
+    const context = { editor: this as AIComposer, state: this.getState(), payload };
     return command.canExecute ? command.canExecute(context) : true;
   }
 
@@ -560,7 +560,7 @@ export class PromptEditorImpl implements PromptEditor {
     this.assertAlive();
     const trigger = this.triggers.get(triggerId);
     if (!trigger) {
-      throw new PromptEditorError('UNKNOWN_TRIGGER', `No trigger registered for "${triggerId}"`);
+      throw new AIComposerError('UNKNOWN_TRIGGER', `No trigger registered for "${triggerId}"`);
     }
     this.insertText(trigger.character, this.selection.focus);
     if (this.view) this.view.focus();
@@ -568,16 +568,16 @@ export class PromptEditorImpl implements PromptEditor {
 
   // -- plugins ---------------------------------------------------------------
 
-  registerPlugin(plugin: PromptPlugin): Unsubscribe {
+  registerPlugin(plugin: AIComposerPlugin): Unsubscribe {
     this.assertAlive();
     return this.pluginRegistry.install(plugin, this.createPluginContext());
   }
 
-  registerTrigger(trigger: PromptTrigger): Unsubscribe {
+  registerTrigger(trigger: AIComposerTrigger): Unsubscribe {
     return this.triggers.register(trigger);
   }
 
-  registerCommand(command: PromptCommand): Unsubscribe {
+  registerCommand(command: AIComposerCommand): Unsubscribe {
     return this.commands.register(command);
   }
 
@@ -591,27 +591,27 @@ export class PromptEditorImpl implements PromptEditor {
 
   // -- events ----------------------------------------------------------------
 
-  on<K extends PromptEditorEventType>(
+  on<K extends AIComposerEventType>(
     type: K,
-    handler: (event: PromptEditorEventMap[K]) => void,
+    handler: (event: AIComposerEventMap[K]) => void,
   ): Unsubscribe {
     return this.events.on(type, handler);
   }
 
-  once<K extends PromptEditorEventType>(
+  once<K extends AIComposerEventType>(
     type: K,
-    handler: (event: PromptEditorEventMap[K]) => void,
+    handler: (event: AIComposerEventMap[K]) => void,
   ): Unsubscribe {
     return this.events.once(type, handler);
   }
 
-  off<K extends PromptEditorEventType>(type: K, handler: (event: PromptEditorEventMap[K]) => void): void {
+  off<K extends AIComposerEventType>(type: K, handler: (event: AIComposerEventMap[K]) => void): void {
     this.events.off(type, handler);
   }
 
   // -- state ----------------------------------------------------------------
 
-  getState(): PromptEditorState {
+  getState(): AIComposerState {
     if (!this.stateCache) {
       this.stateCache = {
         value: this.document,
@@ -641,11 +641,11 @@ export class PromptEditorImpl implements PromptEditor {
 
   // -- config ----------------------------------------------------------------
 
-  getConfig(): PromptEditorConfig {
+  getConfig(): AIComposerConfig {
     return this.config;
   }
 
-  configure(patch: Partial<PromptEditorOptions>): void {
+  configure(patch: Partial<AIComposerOptions>): void {
     const previousMode = this.config.mode;
     this.config = { ...this.config, ...patch };
     if (patch.history) this.history.setOptions(patch.history);
@@ -681,7 +681,7 @@ export class PromptEditorImpl implements PromptEditor {
 
   private assertAlive(): void {
     if (this.destroyed) {
-      throw new PromptEditorError(ErrorCode.EDITOR_DESTROYED, 'This editor has been destroyed');
+      throw new AIComposerError(ErrorCode.EDITOR_DESTROYED, 'This editor has been destroyed');
     }
   }
 
@@ -737,7 +737,7 @@ export class PromptEditorImpl implements PromptEditor {
     this.triggerEngine.handleDocumentChange();
   }
 
-  private restore(snapshot: { document: PromptDocument; selection: SelectionState }, source: 'undo' | 'redo'): void {
+  private restore(snapshot: { document: AIComposerDocument; selection: SelectionState }, source: 'undo' | 'redo'): void {
     this.document = snapshot.document;
     this.selection = clampSelection(snapshot.document, snapshot.selection);
     this.invalidateState();
@@ -767,7 +767,7 @@ export class PromptEditorImpl implements PromptEditor {
     const editor = this;
     return {
       get editor() {
-        return editor as PromptEditor;
+        return editor as AIComposer;
       },
       get document() {
         return editor.document;
@@ -786,7 +786,7 @@ export class PromptEditorImpl implements PromptEditor {
         editor.invalidateState();
         editor.notify();
       },
-      replaceRun(state: TriggerState, nodes: PromptNode[], options?: { trailingSpace?: boolean; source?: ChangeSource }) {
+      replaceRun(state: TriggerState, nodes: AIComposerNode[], options?: { trailingSpace?: boolean; source?: ChangeSource }) {
         const range: DocumentRange = {
           start: createPosition(state.nodeIndex, state.triggerOffset),
           end: createPosition(state.nodeIndex, state.endOffset),
@@ -798,7 +798,7 @@ export class PromptEditorImpl implements PromptEditor {
 
   private createPluginContext(): PluginContext {
     return {
-      editor: this as PromptEditor,
+      editor: this as AIComposer,
       getConfig: () => this.config,
       commands: this.commands,
       triggers: this.triggers,
@@ -810,17 +810,17 @@ export class PromptEditorImpl implements PromptEditor {
   }
 }
 
-function documentLengthOf(document: PromptDocument): number {
+function documentLengthOf(document: AIComposerDocument): number {
   return document.nodes.reduce((sum, node) => sum + (node.type === 'text' ? node.text.length : 1), 0);
 }
 
 /** Runtime guard for values claimed to be editors (useful in adapters). */
-export function isPromptEditor(value: unknown): value is PromptEditor {
+export function isAIComposer(value: unknown): value is AIComposer {
   return (
     typeof value === 'object' &&
     value !== null &&
-    typeof (value as PromptEditor).getValue === 'function' &&
-    typeof (value as PromptEditor).setValue === 'function' &&
-    typeof (value as PromptEditor).subscribe === 'function'
+    typeof (value as AIComposer).getValue === 'function' &&
+    typeof (value as AIComposer).setValue === 'function' &&
+    typeof (value as AIComposer).subscribe === 'function'
   );
 }

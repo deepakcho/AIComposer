@@ -11,19 +11,19 @@
  * ```
  *
  * Attributes: mode, placeholder, disabled, readonly, max-height (CSS length).
- * Properties: editor (external PromptEditor), plugins, value.
+ * Properties: editor (external AIComposer), plugins, value.
  * Events:     aic-change, aic-input, aic-submit, aic-focus, aic-blur (CustomEvent, detail = payload).
  */
 
 import {
-  createPromptEditor,
-  isPromptEditor,
-  type PromptEditor,
-  type PromptEditorEventMap,
-  type PromptEditorEventType,
-  type PromptPlugin,
+  createAIComposer,
+  isAIComposer,
+  type AIComposer,
+  type AIComposerEventMap,
+  type AIComposerEventType,
+  type AIComposerPlugin,
 } from '@ai-composer/core';
-import { mountPromptEditor, type MountedEditor } from '@ai-composer/dom';
+import { mountAIComposer, type MountedEditor } from '@ai-composer/dom';
 
 const TAG_NAME = 'ai-composer-editor';
 
@@ -35,7 +35,7 @@ const ATTRIBUTE_MAP: Record<string, 'mode' | 'placeholder' | 'disabled' | 'reado
   'max-height': 'maxHeight',
 };
 
-const FORWARDED_EVENTS: PromptEditorEventType[] = [
+const FORWARDED_EVENTS: AIComposerEventType[] = [
   'change',
   'input',
   'submit',
@@ -52,8 +52,8 @@ export class AiComposerEditorElement extends HTMLElement {
     return Object.keys(ATTRIBUTE_MAP);
   }
 
-  private _plugins: PromptPlugin[] = [];
-  private _editor: PromptEditor | null = null;
+  private _plugins: AIComposerPlugin[] = [];
+  private _editor: AIComposer | null = null;
   private mounted: MountedEditor | null = null;
   private unsubscribes: Array<() => void> = [];
 
@@ -61,10 +61,10 @@ export class AiComposerEditorElement extends HTMLElement {
    * Plugins for the internally created editor. May be set before or after
    * connection — after connection the internal editor is rebuilt.
    */
-  get plugins(): PromptPlugin[] {
+  get plugins(): AIComposerPlugin[] {
     return this._plugins;
   }
-  set plugins(value: PromptPlugin[]) {
+  set plugins(value: AIComposerPlugin[]) {
     this._plugins = value;
     if (!this.isConnected) return;
     this.teardown();
@@ -74,11 +74,11 @@ export class AiComposerEditorElement extends HTMLElement {
   }
 
   /** Use an externally owned editor (takes precedence over internal creation). */
-  get editor(): PromptEditor | null {
+  get editor(): AIComposer | null {
     return this._editor;
   }
-  set editor(value: PromptEditor | null) {
-    if (value && !isPromptEditor(value)) return;
+  set editor(value: AIComposer | null) {
+    if (value && !isAIComposer(value)) return;
     this._editor = value;
     if (this.isConnected) this.remount();
   }
@@ -122,9 +122,9 @@ export class AiComposerEditorElement extends HTMLElement {
 
   private remount(): void {
     this.teardown();
-    if (!this._editor) this._editor = createPromptEditor({ plugins: this._plugins });
+    if (!this._editor) this._editor = createAIComposer({ plugins: this._plugins });
 
-    this.mounted = mountPromptEditor(this, this._editor, {
+    this.mounted = mountAIComposer(this, this._editor, {
       mode: this.getAttribute('mode') ?? undefined,
     });
     if (this.getAttribute('placeholder')) {
@@ -138,7 +138,7 @@ export class AiComposerEditorElement extends HTMLElement {
         this._editor.on(type, (payload) => {
           this.dispatchEvent(
             new CustomEvent(`aic-${type}`, {
-              detail: payload as PromptEditorEventMap[typeof type],
+              detail: payload as AIComposerEventMap[typeof type],
               bubbles: type === 'submit' || type === 'change',
               composed: true,
             }),

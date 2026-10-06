@@ -17,7 +17,7 @@ export type TemplateSlotName =
   | 'footer'
   | 'status';
 
-export interface PromptDomTemplate {
+export interface AIComposerDomTemplate {
   name: string;
   /** Slots rendered by the default mount, in order. */
   slots: TemplateSlotName[];
@@ -29,21 +29,23 @@ export interface PromptDomTemplate {
   toolbarButtons?: Array<'undo' | 'redo' | 'submit'>;
 }
 
-export const COMPACT_TEMPLATE: PromptDomTemplate = {
+export const COMPACT_TEMPLATE: AIComposerDomTemplate = {
   name: 'compact',
-  slots: ['body', 'attachments', 'input', 'suggestions'],
+  slots: ['body', 'attachments', 'input', 'suggestions', 'toolbar'],
   multiline: true,
   submitKey: 'enter',
+  // One line: chips + input + send inside the pill (CSS lays them in a row).
+  toolbarButtons: ['submit'],
 };
 
-export const DEFAULT_TEMPLATE: PromptDomTemplate = {
+export const DEFAULT_TEMPLATE: AIComposerDomTemplate = {
   name: 'default',
   slots: ['body', 'attachments', 'input', 'suggestions'],
   multiline: true,
   submitKey: 'enter',
 };
 
-export const CHAT_TEMPLATE: PromptDomTemplate = {
+export const CHAT_TEMPLATE: AIComposerDomTemplate = {
   name: 'chat',
   slots: ['header', 'body', 'attachments', 'input', 'suggestions', 'toolbar', 'actions'],
   multiline: true,
@@ -51,7 +53,7 @@ export const CHAT_TEMPLATE: PromptDomTemplate = {
   toolbarButtons: ['submit'],
 };
 
-export const EXPANDED_TEMPLATE: PromptDomTemplate = {
+export const EXPANDED_TEMPLATE: AIComposerDomTemplate = {
   name: 'expanded',
   slots: ['header', 'body', 'attachments', 'input', 'suggestions', 'toolbar', 'footer'],
   multiline: true,
@@ -59,19 +61,19 @@ export const EXPANDED_TEMPLATE: PromptDomTemplate = {
   toolbarButtons: ['undo', 'redo', 'submit'],
 };
 
-const TEMPLATES: Record<string, PromptDomTemplate> = {
+const TEMPLATES: Record<string, AIComposerDomTemplate> = {
   compact: COMPACT_TEMPLATE,
   default: DEFAULT_TEMPLATE,
   chat: CHAT_TEMPLATE,
   expanded: EXPANDED_TEMPLATE,
 };
 
-export function templateForMode(mode: string): PromptDomTemplate {
+export function templateForMode(mode: string): AIComposerDomTemplate {
   return TEMPLATES[mode] ?? DEFAULT_TEMPLATE;
 }
 
 /** Register a custom mode preset (used by applications/other packages). */
-export function registerTemplate(template: PromptDomTemplate): void {
+export function registerTemplate(template: AIComposerDomTemplate): void {
   TEMPLATES[template.name] = template;
 }
 

@@ -17,6 +17,7 @@
     "affected:test": "nx affected -t test",
     "affected:lint": "nx affected -t lint",
     "dev:vanilla": "nx serve playground-vanilla",
+    "dev:docs": "nx serve docs",
     "dev:react": "nx serve playground-react",
     "dev:vue": "nx serve playground-vue",
     "dev:angular": "nx serve playground-angular",
@@ -28,7 +29,8 @@
     "storybook:vue": "nx run vue:storybook",
     "storybook:angular": "nx run angular:storybook",
     "storybook:wc": "nx run web-component:storybook",
-    "storybook:build": "nx run-many -t build-storybook"
+    "storybook:build": "nx run-many -t build-storybook",
+    "docs:build": "nx run docs:build"
   },
   "devDependencies": {
     "@ai-composer/angular": "workspace:*",
@@ -39,7 +41,6 @@
     "@ai-composer/react": "workspace:*",
     "@ai-composer/testing": "workspace:*",
     "@ai-composer/themes": "workspace:*",
-    "@ai-composer/ui": "workspace:*",
     "@ai-composer/vue": "workspace:*",
     "@ai-composer/web-component": "workspace:*",
     "@analogjs/vite-plugin-angular": "^1.9.0",

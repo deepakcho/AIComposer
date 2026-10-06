@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { createPromptEditor } from '@ai-composer/core';
+import { createAIComposer } from '@ai-composer/core';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
 import { commandPlugin } from '@ai-composer/plugin-command';
 import {
-  PromptEditor,
-  PromptHeader,
-  PromptInput,
-  PromptSuggestions,
-  PromptToolbar,
+  AIComposer,
+  AIComposerHeader,
+  AIComposerInput,
+  AIComposerSuggestions,
+  AIComposerToolbar,
 } from '@ai-composer/react';
 import { Level1, Level2, ControlledDemo } from './demos';
 
@@ -43,24 +43,24 @@ export default function App() {
 /** Level 3: the application owns the entire layout via slots. */
 function CustomLayoutDemo() {
   const [editor] = useState(() =>
-    createPromptEditor({
+    createAIComposer({
       plugins: [mentionPlugin({ items: people }), commandPlugin({ commands: [{ id: 'summarize', label: 'Summarize' }] })],
       placeholder: 'Custom layout…',
     }),
   );
 
   return (
-    <PromptEditor editor={editor}>
-      <PromptHeader>
+    <AIComposer editor={editor}>
+      <AIComposerHeader>
         <strong>Context:</strong> PR #128 · review-thread
-      </PromptHeader>
+      </AIComposerHeader>
 
       <div className="aic-body" data-aic-slot="body">
-        <PromptInput suggestions={false} />
-        <PromptSuggestions />
+        <AIComposerInput suggestions={false} />
+        <AIComposerSuggestions />
       </div>
 
-      <PromptToolbar>
+      <AIComposerToolbar>
         <button type="button" onClick={() => void editor.executeCommand('undo')}>
           ↺
         </button>
@@ -74,7 +74,7 @@ function CustomLayoutDemo() {
         >
           Ship it
         </button>
-      </PromptToolbar>
-    </PromptEditor>
+      </AIComposerToolbar>
+    </AIComposer>
   );
 }

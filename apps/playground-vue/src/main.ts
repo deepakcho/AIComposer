@@ -1,9 +1,9 @@
 import { createApp, defineComponent, h } from 'vue';
 import '@ai-composer/themes/css/tokens.css';
 import '@ai-composer/themes/css/default.css';
-import { createPromptEditor } from '@ai-composer/core';
+import { createAIComposer } from '@ai-composer/core';
 import { mentionPlugin } from '@ai-composer/plugin-mention';
-import { PromptEditor, PromptInput, PromptSuggestions, PromptToolbar, usePromptState } from '@ai-composer/vue';
+import { AIComposer, AIComposerInput, AIComposerSuggestions, AIComposerToolbar, useAIComposerState } from '@ai-composer/vue';
 
 const people = [
   { id: 'u1', label: 'Ada Lovelace', description: 'Engineering' },
@@ -13,7 +13,7 @@ const people = [
 const App = defineComponent({
   name: 'App',
   setup() {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       mode: 'chat',
       placeholder: 'Ask anything… try @mentions',
       plugins: [mentionPlugin({ items: people })],
@@ -21,7 +21,7 @@ const App = defineComponent({
 
     const DraftMirror = defineComponent({
       setup() {
-        const state = usePromptState(editor);
+        const state = useAIComposerState(editor);
         return () =>
           h('p', { class: 'mirror' }, [
             'Markdown: ',
@@ -36,7 +36,7 @@ const App = defineComponent({
       h('main', [
         h('h1', 'AI Composer · Vue'),
         h(
-          PromptEditor,
+          AIComposer,
           {
             editor,
             mode: 'chat',
@@ -46,13 +46,13 @@ const App = defineComponent({
           {
             default: () => [
               h('div', { class: 'aic-body', 'data-aic-slot': 'body' }, [
-                h(PromptInput, { suggestions: false }),
-                h(PromptSuggestions, null, {
+                h(AIComposerInput, { suggestions: false }),
+                h(AIComposerSuggestions, null, {
                   default: ({ item }: { item: { label: string; description?: string } }) =>
                     h('span', [item.label, item.description ? ` — ${item.description}` : '']),
                 }),
               ]),
-              h(PromptToolbar, null, {
+              h(AIComposerToolbar, null, {
                 default: () =>
                   h('button', { type: 'button', onClick: () => void editor.submit() }, 'Send'),
               }),

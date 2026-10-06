@@ -4,21 +4,22 @@
  * data-aic-* attributes so parse.ts can round-trip them safely.
  */
 
-import type { PromptDocument, PromptNode } from '@ai-composer/core';
+import type { AIComposerDocument, AIComposerNode } from '@ai-composer/core';
 import type { NodeRegistry } from '@ai-composer/core';
 
-function displayOf(node: PromptNode, registry: NodeRegistry): string {
+function displayOf(node: AIComposerNode, registry: NodeRegistry): string {
   const definition = registry.get(node.type);
   return definition?.toDisplay?.(node) ?? '';
 }
 
 /** Render one atomic node as a non-editable chip element. */
-export function renderChip(node: PromptNode, registry: NodeRegistry): HTMLElement {
+export function renderChip(node: AIComposerNode, registry: NodeRegistry): HTMLElement {
   const chip = document.createElement('span');
   chip.setAttribute('contenteditable', 'false');
   chip.className = 'aic-chip';
   chip.setAttribute('data-aic-key', node.key);
   chip.setAttribute('data-aic-node', node.type);
+  chip.hidden = node.type === 'attachment';
   chip.setAttribute('aria-label', displayOf(node, registry));
 
   switch (node.type) {
@@ -76,7 +77,7 @@ export function renderTextRun(text: string): Node {
  * Render the document into `host`, replacing previous content.
  * The placeholder <br> keeps the host clickable when empty.
  */
-export function renderDocument(host: HTMLElement, document_: PromptDocument, registry: NodeRegistry): void {
+export function renderDocument(host: HTMLElement, document_: AIComposerDocument, registry: NodeRegistry): void {
   host.textContent = '';
   for (const node of document_.nodes) {
     host.appendChild(node.type === 'text' ? renderTextRun(node.text) : renderChip(node, registry));

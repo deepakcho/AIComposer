@@ -1,0 +1,225 @@
+/* App-level styling for the custom-template demos. Everything here is what
+   an integrator would own — the editor itself only consumes aic-* tokens. */
+
+.tpl-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 0;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.tpl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--muted);
+  color: var(--accent-foreground);
+  font-weight: 500;
+}
+
+.tpl-tag-accent {
+  background: #e8f1ff;
+  color: #1d5fd6;
+}
+
+.dark .tpl-tag-accent {
+  background: #1c2c47;
+  color: #8cb4f8;
+}
+
+.tpl-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+
+.tpl-icon-btn:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.tpl-icon-btn svg,
+.tpl-model svg {
+  display: inline-flex;
+}
+
+.tpl-model {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.tpl-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 44px 20px 36px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.tpl-hero h3 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.tpl-hero-bar {
+  width: min(500px, 100%);
+}
+
+.tpl-kbd {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.tpl-kbd kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--card);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.tpl-ticket {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.tpl-ticket-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.tpl-ticket-meta strong {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.tpl-ticket .aic-root {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.tpl-ticket-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.tpl-select {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+}
+
+.tpl-btn-primary {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+
+.tpl-btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.tpl-btn-primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.tpl-comment {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.tpl-avatar {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  color: #4338ca;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tpl-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tpl-btn-ghost {
+  padding: 5px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tpl-btn-ghost:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}

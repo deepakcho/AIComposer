@@ -5,18 +5,18 @@
  *
  * ```ts
  * // packages/react/src/contract.test.tsx
- * import { definePromptEditorContractSuite } from '@ai-composer/testing';
- * definePromptEditorContractSuite((options) => mountReactEditor(options));
+ * import { defineAIComposerContractSuite } from '@ai-composer/testing';
+ * defineAIComposerContractSuite((options) => mountReactEditor(options));
  * ```
  */
 
 import { describe, expect, it, vi } from 'vitest';
 import {
   createMentionNode,
-  createPromptEditor,
+  createAIComposer,
   createTextNode,
-  type PromptEditor,
-  type PromptEditorOptions,
+  type AIComposer,
+  type AIComposerOptions,
   type SuggestionItem,
 } from '@ai-composer/core';
 
@@ -25,7 +25,7 @@ export interface ContractSuiteHooks {
    * Mount the editor UI for this suite (adapter-specific). Return a teardown
    * function. Headless usage (core-only) passes nothing.
    */
-  mount?: (editor: PromptEditor) => void | (() => void);
+  mount?: (editor: AIComposer) => void | (() => void);
 }
 
 export interface ContractSuiteOptions extends ContractSuiteHooks {
@@ -38,14 +38,14 @@ const people: SuggestionItem[] = [
   { id: 'u2', label: 'Grace Hopper' },
 ];
 
-export function definePromptEditorContractSuite(
-  createEditor: (options?: PromptEditorOptions) => PromptEditor,
+export function defineAIComposerContractSuite(
+  createEditor: (options?: AIComposerOptions) => AIComposer,
   options: ContractSuiteOptions = {},
 ): void {
-  describe(options.title ?? 'PromptEditor contract', () => {
-    let editor: PromptEditor;
+  describe(options.title ?? 'AIComposer contract', () => {
+    let editor: AIComposer;
 
-    function fresh(next?: PromptEditorOptions): PromptEditor {
+    function fresh(next?: AIComposerOptions): AIComposer {
       editor?.destroy();
       editor = createEditor(next);
       return editor;
@@ -177,13 +177,13 @@ export function definePromptEditorContractSuite(
   });
 }
 
-function findEditableHost(_editor: PromptEditor): HTMLElement | null {
+function findEditableHost(_editor: AIComposer): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-aic-input]');
 }
 
 /** The reference implementation: headless core editor. */
 export function contractSuiteForCore(): void {
-  definePromptEditorContractSuite((options) => createPromptEditor(options), {
-    title: 'PromptEditor contract (core reference)',
+  defineAIComposerContractSuite((options) => createAIComposer(options), {
+    title: 'AIComposer contract (core reference)',
   });
 }

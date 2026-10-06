@@ -1,5 +1,5 @@
 /**
- * React hooks. `usePromptEditor` owns an editor instance; the others subscribe
+ * React hooks. `useAIComposer` owns an editor instance; the others subscribe
  * re-render-efficiently via useSyncExternalStore.
  */
 
@@ -12,45 +12,51 @@ import {
   type ReactNode,
 } from 'react';
 import {
-  createPromptEditor,
-  isPromptEditor,
-  type PromptEditor,
-  type PromptEditorOptions,
-  type PromptEditorState,
+  createAIComposer,
+  isAIComposer,
+  type AIComposer,
+  type AIComposerOptions,
+  type AIComposerState,
   type SelectionState,
   type SuggestionItem,
 } from '@ai-composer/core';
 
-export const PromptEditorContext = createContext<PromptEditor | null>(null);
+export const AIComposerContext = createContext<AIComposer | null>(null);
 
 /** Provide an existing editor to the slot components below. */
-export function PromptEditorProvider({
+export function AIComposerProvider({
   editor,
   children,
 }: {
-  editor: PromptEditor;
+  editor: AIComposer;
   children: ReactNode;
 }): JSX.Element {
-  return <PromptEditorContext.Provider value={editor}>{children}</PromptEditorContext.Provider>;
+  return <AIComposerContext.Provider value={editor}>{children}</AIComposerContext.Provider>;
 }
 
 /** Create (once) or reuse an editor. Destroys internally-created editors on unmount. */
-export function usePromptEditor(options?: PromptEditorOptions): PromptEditor {
-  const optionsRef = useRef<PromptEditorOptions | undefined>(options);
+export function useAIComposer(options?: AIComposerOptions): AIComposer {
+  const optionsRef = useRef<AIComposerOptions | undefined>(options);
   optionsRef.current = options;
 
-  // StrictMode mounts → unmounts → remounts: rebuild if the previous
-  // instance was destroyed by the first cleanup.
-  const editorRef = useRef<PromptEditor | null>(null);
+  const editorRef = useRef<AIComposer | null>(null);
   if (editorRef.current === null || editorRef.current.isDestroyed()) {
-    editorRef.current = createPromptEditor(optionsRef.current);
+    editorRef.current = createAIComposer(optionsRef.current);
   }
   const editor = editorRef.current;
 
+  const destroyTimer = useRef<number | null>(null);
+
   useEffect(() => {
-    const instance = editor;
+    if (destroyTimer.current !== null) {
+      window.clearTimeout(destroyTimer.current);
+      destroyTimer.current = null;
+    }
     return () => {
-      instance.destroy();
+      destroyTimer.current = window.setTimeout(() => {
+        destroyTimer.current = null;
+        editor.destroy();
+      });
     };
   }, [editor]);
 
@@ -58,22 +64,22 @@ export function usePromptEditor(options?: PromptEditorOptions): PromptEditor {
 }
 
 /** Resolve the editor from context (slot components). */
-export function usePromptEditorContext(): PromptEditor {
-  const editor = useContext(PromptEditorContext);
-  if (!editor || !isPromptEditor(editor)) {
+export function useAIComposerContext(): AIComposer {
+  const editor = useContext(AIComposerContext);
+  if (!editor || !isAIComposer(editor)) {
     throw new Error(
-      'No editor in context. Render <PromptEditor> or <PromptEditorProvider editor={editor}> above this component.',
+      'No editor in context. Render <AIComposer> or <AIComposerProvider editor={editor}> above this component.',
     );
   }
   return editor;
 }
 
-function subscribe(editor: PromptEditor, onChange: () => void): () => void {
+function subscribe(editor: AIComposer, onChange: () => void): () => void {
   return editor.subscribe(onChange);
 }
 
 /** Live editor state (re-renders on every state change). */
-export function usePromptState(editor: PromptEditor): PromptEditorState {
+export function useAIComposerState(editor: AIComposer): AIComposerState {
   return useSyncExternalStore(
     (onChange) => subscribe(editor, onChange),
     () => editor.getState(),
@@ -82,12 +88,12 @@ export function usePromptState(editor: PromptEditor): PromptEditorState {
 }
 
 /** Live selection. */
-export function usePromptSelection(editor: PromptEditor): SelectionState {
-  return usePromptState(editor).selection;
+export function useAIComposerSelection(editor: AIComposer): SelectionState {
+  return useAIComposerState(editor).selection;
 }
 
 /** Suggestion session (items + highlighted index + accept). */
-export function usePromptSuggestions(editor: PromptEditor): {
+export function useAIComposerSuggestions(editor: AIComposer): {
   items: SuggestionItem[];
   activeIndex: number;
   open: boolean;
@@ -95,7 +101,7 @@ export function usePromptSuggestions(editor: PromptEditor): {
   move: (delta: number) => void;
   close: () => void;
 } {
-  const state = usePromptState(editor);
+  const state = useAIComposerState(editor);
   return {
     items: state.suggestions,
     activeIndex: state.activeSuggestionIndex,
@@ -107,8 +113,8 @@ export function usePromptSuggestions(editor: PromptEditor): {
 }
 
 /** Execute commands bound to the editor (toolbars, menus). */
-export function usePromptCommand(
-  editor: PromptEditor,
+export function useAIComposerCommand(
+  editor: AIComposer,
 ): (id: string, payload?: unknown) => Promise<void> {
   return (id: string, payload?: unknown) => editor.executeCommand(id, payload);
 }

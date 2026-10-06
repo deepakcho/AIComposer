@@ -4,7 +4,7 @@
 
 ## Context
 
-Undo/redo can be operational (inverse commands) or snapshot-based. Prompt
+Undo/redo can be operational (inverse commands) or snapshot-based. Composer
 documents are small; correctness and debuggability beat algorithmic elegance.
 
 ## Decision
@@ -22,7 +22,7 @@ no deep copies.
 ## Consequences
 
 - Trivially correct for chips, custom nodes, plugin mutations.
-- Memory is bounded by `limit` (default 200) × document size — fine at prompt
+- Memory is bounded by `limit` (default 200) × document size — fine for typical composer
   scale; large documents may want a diffing store later.
 - Typing "hello" undoes as one step (feels right), explicit transactions give
   plugins deterministic grouping.

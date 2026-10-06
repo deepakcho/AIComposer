@@ -1,5 +1,5 @@
 /**
- * @ai-composer/core — the framework-independent prompt editor engine.
+ * @ai-composer/core — the framework-independent AI composer engine.
  *
  * Layers:
  *   model/         document, nodes, selection (pure data + edit primitives)
@@ -13,7 +13,7 @@
  */
 
 // model
-export type { PromptDocument } from './model/document';
+export type { AIComposerDocument } from './model/document';
 export {
   coerceDocument,
   createDocument,
@@ -37,8 +37,8 @@ export type {
   CustomNode,
   MentionNode,
   NodeKey,
-  PromptNode,
-  PromptNodeType,
+  AIComposerNode,
+  AIComposerNodeType,
   TextNode,
   VariableNode,
 } from './model/nodes';
@@ -53,7 +53,7 @@ export {
   ensureNodeKey,
   getNodeType,
   isAtomicNode,
-  isPromptNode,
+  isAIComposerNode,
   isTextNode,
 } from './model/nodes';
 export type { DocumentRange, Position, SelectionState } from './model/selection';
@@ -75,7 +75,7 @@ export {
 } from './model/selection';
 
 // state
-export type { PromptEditorState, SuggestionItem, TriggerState } from './state/state';
+export type { AIComposerState, SuggestionItem, TriggerState } from './state/state';
 
 // events
 export type {
@@ -90,9 +90,9 @@ export type {
   ModeChangeEvent,
   NodeInsertEvent,
   NodeRemoveEvent,
-  PromptEditorBus,
-  PromptEditorEventMap,
-  PromptEditorEventType,
+  AIComposerBus,
+  AIComposerEventMap,
+  AIComposerEventType,
   SelectionChangeEvent,
   SubmitEvent,
   SuggestionsChangeEvent,
@@ -109,7 +109,7 @@ export type {
 export { createEventBus } from './events/event-bus';
 
 // commands
-export type { CommandContext, CommandRegistry, PromptCommand } from './commands/registry';
+export type { CommandContext, CommandRegistry, AIComposerCommand } from './commands/registry';
 export { createCommandRegistry } from './commands/registry';
 export {
   BUILTIN_COMMANDS,
@@ -123,7 +123,7 @@ export {
 
 // triggers
 export type {
-  PromptTrigger,
+  AIComposerTrigger,
   TriggerHost,
   TriggerRegistry,
   TriggerSearchContext,
@@ -141,12 +141,12 @@ export type { HistoryOptions, HistorySnapshot, RecordOptions } from './history/h
 export { DEFAULT_HISTORY_OPTIONS, EditorHistory } from './history/history';
 
 // plugins
-export type { PluginContext, PromptPlugin, PluginRegistry } from './plugins/registry';
+export type { PluginContext, AIComposerPlugin, PluginRegistry } from './plugins/registry';
 export { createPluginRegistry } from './plugins/registry';
 
 // serialization
 export type {
-  AiPromptPayload,
+  AIComposerPayload,
   SerializationFormat,
   Serializer,
   SerializerContext,
@@ -179,23 +179,23 @@ export {
 
 // editor + factory + config
 export type {
+  AIComposer,
   EditorView,
   InsertNodeOptions,
-  PromptEditor,
   SetValueOptions,
   StateListener,
   TransactionOptions,
 } from './editor';
-export { PromptEditorImpl, isPromptEditor } from './editor';
-export { createPromptEditor, CORE_VERSION } from './factory';
+export { AIComposerImpl, isAIComposer } from './editor';
+export { createAIComposer, CORE_VERSION } from './factory';
 export type {
-  PromptEditorConfig,
-  PromptEditorOptions,
+  AIComposerConfig,
+  AIComposerOptions,
   SubmitConfig,
   SubmitKey,
 } from './types';
 
 // errors
-export { ErrorCode, PromptEditorError, toError, type PromptErrorCode } from './errors';
+export { ErrorCode, AIComposerError, toError, type AIComposerErrorCode } from './errors';
 
 export { escapeHtml } from './utils/html';

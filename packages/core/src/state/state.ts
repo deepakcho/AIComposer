@@ -3,7 +3,7 @@
  * React hooks state, Angular signals, Vue refs, Svelte stores — core stays UI-free.
  */
 
-import type { PromptDocument } from '../model/document';
+import type { AIComposerDocument } from '../model/document';
 import type { AttachmentNode } from '../model/nodes';
 import type { SelectionState } from '../model/selection';
 
@@ -33,9 +33,9 @@ export interface TriggerState {
   endOffset: number;
 }
 
-export interface PromptEditorState {
+export interface AIComposerState {
   /** Current document value. */
-  value: PromptDocument;
+  value: AIComposerDocument;
   focused: boolean;
   disabled: boolean;
   readonly: boolean;

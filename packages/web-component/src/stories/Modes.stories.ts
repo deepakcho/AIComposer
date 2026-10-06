@@ -23,11 +23,12 @@ const meta: Meta = {
     placeholder: { control: 'text' },
   },
   args: { placeholder: 'Ask anything…' },
-  render: (args) => ({
-    template: `
-      <ai-composer-editor mode="${args.mode}" placeholder="${args.placeholder}"></ai-composer-editor>
-    `,
-  }),
+  render: (args) => {
+    const element = document.createElement('ai-composer-editor');
+    element.setAttribute('mode', args.mode);
+    element.setAttribute('placeholder', args.placeholder);
+    return element;
+  },
 };
 
 export default meta;
@@ -45,9 +46,13 @@ export const Compact: Story = {
 
 export const MaxHeight: Story = {
   name: 'Max height · custom cap',
-  render: () => ({
-    template: `<ai-composer-editor mode="chat" max-height="96px" placeholder="Type several lines — the box stops at 96px and scrolls…"></ai-composer-editor>`,
-  }),
+  render: () => {
+    const element = document.createElement('ai-composer-editor');
+    element.setAttribute('mode', 'chat');
+    element.setAttribute('max-height', '96px');
+    element.setAttribute('placeholder', 'Type several lines — the box stops at 96px and scrolls…');
+    return element;
+  },
   parameters: {
     docs: {
       source: {
@@ -71,7 +76,7 @@ export const Chat: Story = {
 };
 
 export const Expanded: Story = {
-  args: { mode: 'expanded', placeholder: 'Write a long, detailed prompt…' },
+  args: { mode: 'expanded', placeholder: 'Write a detailed draft…' },
   parameters: {
     docs: { source: { code: `<ai-composer-editor mode="expanded"></ai-composer-editor>` } },
   },

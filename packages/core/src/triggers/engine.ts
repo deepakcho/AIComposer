@@ -5,31 +5,31 @@
  */
 
 import type { Unsubscribe } from '../events/event-bus';
-import { PromptEditorError, toError } from '../errors';
+import { AIComposerError, toError } from '../errors';
 import {
   createCommandNode,
   createCustomNode,
   createMentionNode,
   createVariableNode,
-  type PromptNode,
+  type AIComposerNode,
 } from '../model/nodes';
-import type { PromptDocument } from '../model/document';
+import type { AIComposerDocument } from '../model/document';
 import type { SelectionState } from '../model/selection';
 import type { SuggestionItem, TriggerState } from '../state/state';
-import type { PromptEditor } from '../editor';
-import type { PromptEditorBus } from '../events/events';
+import type { AIComposer } from '../editor';
+import type { AIComposerBus } from '../events/events';
 
 export interface TriggerSearchContext {
   query: string;
-  document: PromptDocument;
+  document: AIComposerDocument;
   selection: SelectionState;
   /** Aborted when a newer keystroke superseded this search. */
   signal?: AbortSignal;
 }
 
 export interface TriggerSelectContext {
-  editor: PromptEditor;
-  document: PromptDocument;
+  editor: AIComposer;
+  document: AIComposerDocument;
   /** Text node index containing the trigger run. */
   nodeIndex: number;
   /** Offset of the trigger character. */
@@ -40,7 +40,7 @@ export interface TriggerSelectContext {
   item: SuggestionItem;
 }
 
-export interface PromptTrigger {
+export interface AIComposerTrigger {
   id: string;
   /** Character that activates the trigger, e.g. '@'. */
   character: string;
@@ -60,14 +60,14 @@ export interface PromptTrigger {
 }
 
 export interface TriggerRegistry {
-  register(trigger: PromptTrigger): Unsubscribe;
-  get(id: string): PromptTrigger | undefined;
-  list(): PromptTrigger[];
+  register(trigger: AIComposerTrigger): Unsubscribe;
+  get(id: string): AIComposerTrigger | undefined;
+  list(): AIComposerTrigger[];
   clear(): void;
 }
 
 export function createTriggerRegistry(): TriggerRegistry {
-  const triggers = new Map<string, PromptTrigger>();
+  const triggers = new Map<string, AIComposerTrigger>();
   return {
     register(trigger) {
       triggers.set(trigger.id, trigger);
@@ -88,7 +88,7 @@ export function createTriggerRegistry(): TriggerRegistry {
 }
 
 /** Build the atomic node a trigger inserts for a chosen suggestion. */
-export function createNodeFromSuggestion(trigger: PromptTrigger, item: SuggestionItem): PromptNode {
+export function createNodeFromSuggestion(trigger: AIComposerTrigger, item: SuggestionItem): AIComposerNode {
   const type = trigger.type ?? 'mention';
   switch (type) {
     case 'mention':
@@ -116,14 +116,14 @@ export function createNodeFromSuggestion(trigger: PromptTrigger, item: Suggestio
 
 /** Narrow host surface the engine needs from the editor (keeps the engine testable). */
 export interface TriggerHost {
-  readonly editor: PromptEditor;
-  readonly document: PromptDocument;
+  readonly editor: AIComposer;
+  readonly document: AIComposerDocument;
   readonly selection: SelectionState;
   readonly triggers: TriggerRegistry;
-  readonly events: PromptEditorBus;
+  readonly events: AIComposerBus;
   patchState(patch: { activeTrigger?: TriggerState | null; suggestions?: SuggestionItem[]; activeSuggestionIndex?: number }): void;
   /** Replace the trigger run with nodes as one history step; caret lands after the run. */
-  replaceRun(state: TriggerState, nodes: PromptNode[], options?: { trailingSpace?: boolean; source?: 'api' | 'plugin' | 'user' }): void;
+  replaceRun(state: TriggerState, nodes: AIComposerNode[], options?: { trailingSpace?: boolean; source?: 'api' | 'plugin' | 'user' }): void;
 }
 
 const WORD_CHAR = /[\p{L}\p{N}_]/u;
@@ -229,7 +229,7 @@ export class TriggerEngine {
     }
 
     const before = node.text.slice(0, selection.focus.offset);
-    let best: { trigger: PromptTrigger; state: TriggerState } | null = null;
+    let best: { trigger: AIComposerTrigger; state: TriggerState } | null = null;
 
     for (const trigger of this.host.triggers.list()) {
       const index = before.lastIndexOf(trigger.character);
@@ -276,7 +276,7 @@ export class TriggerEngine {
     }
   }
 
-  private async runSearch(trigger: PromptTrigger, state: TriggerState): Promise<void> {
+  private async runSearch(trigger: AIComposerTrigger, state: TriggerState): Promise<void> {
     const token = ++this.searchToken;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
     try {
@@ -309,9 +309,9 @@ export class TriggerEngine {
 }
 
 /** Convenience factory used by tests and plugins to build triggers quickly. */
-export function defineTrigger(trigger: PromptTrigger): PromptTrigger {
+export function defineTrigger(trigger: AIComposerTrigger): AIComposerTrigger {
   if (!trigger.character || trigger.character.length !== 1) {
-    throw new PromptEditorError('UNKNOWN_TRIGGER', `Trigger "${trigger.id}" must define a single character`);
+    throw new AIComposerError('UNKNOWN_TRIGGER', `Trigger "${trigger.id}" must define a single character`);
   }
   return trigger;
 }

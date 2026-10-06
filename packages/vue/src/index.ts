@@ -3,11 +3,11 @@
  *
  * ```vue
  * <script setup>
- * import { PromptEditor } from '@ai-composer/vue';
+ * import { AIComposer } from '@ai-composer/vue';
  * </script>
  *
  * <template>
- *   <PromptEditor mode="chat" placeholder="Ask anything…" v-model="value" @submit="onSubmit" />
+ *   <AIComposer mode="chat" placeholder="Ask anything…" v-model="value" @submit="onSubmit" />
  * </template>
  * ```
  */
@@ -30,78 +30,92 @@ import {
   type VNode,
 } from 'vue';
 import {
-  createPromptEditor,
-  isPromptEditor,
-  type PromptDocument,
-  type PromptEditor as PromptEditorType,
-  type PromptEditorOptions,
-  type PromptEditorState,
+  createAIComposer,
+  isAIComposer,
+  type AIComposer as AIComposerType,
+  type AIComposerDocument,
+  type AIComposerOptions,
+  type AIComposerState,
   type SuggestionItem,
 } from '@ai-composer/core';
 import { createEditableSurface, createSuggestionList, attachCaretAnchoredPopup, type CaretAnchor } from '@ai-composer/dom';
 
-const EditorKey: InjectionKey<PromptEditorType> = Symbol('ai-composer-editor');
+const EditorKey: InjectionKey<AIComposerType> = Symbol('ai-composer-editor');
 
 /** Create (once) or reuse an editor; destroys internally-created editors on unmount. */
-export function usePromptEditor(options?: PromptEditorOptions): PromptEditorType {
-  const editor = createPromptEditor(options);
+// -- inline SVG icons (lucide-derived geometry; mirrored in every adapter) --
+
+function iconVNode(d: Array<[string, number?]>, size = 16) {
+  return h('svg', {
+    width: size, height: size, viewBox: '0 0 24 24', fill: 'none',
+    stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round',
+    'stroke-linejoin': 'round', 'aria-hidden': 'true',
+  }, d.map(([path, strokeWidth]) => h('path', { d: path, ...(strokeWidth ? { 'stroke-width': strokeWidth } : {}) })));
+}
+const hSendIcon = () => iconVNode([['M12 19V5', 2.4], ['m5 12 7-7 7 7', 2.4]]);
+const hUndoIcon = () => iconVNode([['M3 7v6h6'], ['M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13']]);
+const hRedoIcon = () => iconVNode([['M21 7v6h-6'], ['M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13']]);
+const hCloseIcon = (size = 12) => iconVNode([['M18 6 6 18'], ['m6 6 12 12']], size);
+
+export function useAIComposer(options?: AIComposerOptions): AIComposerType {
+  const editor = createAIComposer(options);
   onBeforeUnmount(() => editor.destroy());
   return editor;
 }
 
 /** Live editor state as a reactive ref. */
-export function usePromptState(editor: PromptEditorType): Readonly<Ref<PromptEditorState>> {
-  const state = shallowRef<PromptEditorState>(editor.getState());
+export function useAIComposerState(editor: AIComposerType): Readonly<Ref<AIComposerState>> {
+  const state = shallowRef<AIComposerState>(editor.getState());
   const unsubscribe = editor.subscribe((next) => {
     state.value = next;
   });
   onBeforeUnmount(unsubscribe);
-  return state as Readonly<Ref<PromptEditorState>>;
+  return state as Readonly<Ref<AIComposerState>>;
 }
 
-/** Resolve the editor provided by <PromptEditor>. */
-export function usePromptEditorFromContext(): PromptEditorType {
+/** Resolve the editor provided by <AIComposer>. */
+export function useAIComposerFromContext(): AIComposerType {
   const editor = inject(EditorKey);
-  if (!editor || !isPromptEditor(editor)) {
-    throw new Error('No editor in context. Render <PromptEditor> above this component.');
+  if (!editor || !isAIComposer(editor)) {
+    throw new Error('No editor in context. Render <AIComposer> above this component.');
   }
   return editor;
 }
 
 function setupEditorProvider(props: {
-  editor?: PromptEditorType;
-  options?: PromptEditorOptions;
-}): { editor: PromptEditorType; state: Readonly<Ref<PromptEditorState>>; created: boolean } {
+  editor?: AIComposerType;
+  options?: AIComposerOptions;
+}): { editor: AIComposerType; state: Readonly<Ref<AIComposerState>>; created: boolean } {
   const created = !props.editor;
-  const editor = props.editor ?? createPromptEditor(props.options);
-  const state = usePromptState(editor);
+  const editor = props.editor ?? createAIComposer(props.options);
+  const state = useAIComposerState(editor);
   provide(EditorKey, editor);
   if (created) onBeforeUnmount(() => editor.destroy());
   return { editor, state, created };
 }
 
 /** The root component. Supports v-model, events and fully custom default slots. */
-export const PromptEditor = defineComponent({
-  name: 'AicPromptEditor',
+export const AIComposer = defineComponent({
+  name: 'AicAIComposer',
   props: {
-    editor: { type: Object as PropType<PromptEditorType>, default: undefined },
-    options: { type: Object as PropType<PromptEditorOptions>, default: undefined },
+    editor: { type: Object as PropType<AIComposerType>, default: undefined },
+    options: { type: Object as PropType<AIComposerOptions>, default: undefined },
     mode: { type: String, default: undefined },
     placeholder: { type: String, default: undefined },
     disabled: { type: Boolean, default: undefined },
     readonly: { type: Boolean, default: undefined },
     modelValue: {
-      type: [Object, String] as PropType<PromptDocument | string | undefined>,
+      type: [Object, String] as PropType<AIComposerDocument | string | undefined>,
       default: undefined,
     },
-    submitLabel: { type: String, default: '↑' },
+    submitLabel: { type: String, default: undefined },
     /** Auto-height ceiling (px or CSS length); scrolls after the cap. */
     maxHeight: { type: [Number, String], default: undefined },
   },
   emits: {
-    'update:modelValue': (value: PromptDocument) => !!value,
-    change: (value: PromptDocument) => !!value,
-    submit: (value: PromptDocument) => !!value,
+    'update:modelValue': (value: AIComposerDocument) => !!value,
+    change: (value: AIComposerDocument) => !!value,
+    submit: (value: AIComposerDocument) => !!value,
   },
   setup(props, { emit, slots }) {
     const { editor, state } = setupEditorProvider(props);
@@ -130,7 +144,7 @@ export const PromptEditor = defineComponent({
 
     // controlled value
     if (props.modelValue !== undefined) {
-      const sync = (value: PromptDocument | string | undefined): void => {
+      const sync = (value: AIComposerDocument | string | undefined): void => {
         if (value === undefined) return;
         if (typeof value === 'string') {
           if (value !== editor.serialize('text')) editor.setValue(value);
@@ -154,13 +168,13 @@ export const PromptEditor = defineComponent({
       } else {
         children.push(
           h('div', { class: 'aic-body', 'data-aic-slot': 'body' }, [
-            h(PromptAttachmentsVue),
-            // PromptInput mounts the suggestion popup inside its own wrapper
-            h(PromptInputVue),
+            h(AIComposerAttachmentsVue),
+            // AIComposerInput mounts the suggestion popup inside its own wrapper
+            h(AIComposerInputVue),
           ]),
         );
-        if (mode === 'chat' || mode === 'expanded') {
-          children.push(h(PromptToolbarVue, { submitLabel: props.submitLabel }));
+        if (mode === 'compact' || mode === 'chat' || mode === 'expanded') {
+          children.push(h(AIComposerToolbarVue, { submitLabel: props.submitLabel }));
         }
       }
       return h(
@@ -173,13 +187,13 @@ export const PromptEditor = defineComponent({
 });
 
 /** The editable input surface component. */
-export const PromptInput = defineComponent({
-  name: 'AicPromptInput',
+export const AIComposerInput = defineComponent({
+  name: 'AicAIComposerInput',
   props: {
     suggestions: { type: Boolean, default: true },
   },
   setup(props) {
-    const editor = usePromptEditorFromContext();
+    const editor = useAIComposerFromContext();
     const host = ref<HTMLElement | null>(null);
 
     onMounted(() => {
@@ -204,10 +218,10 @@ export const PromptInput = defineComponent({
       ]);
   },
 });
-const PromptInputVue = PromptInput;
+const AIComposerInputVue = AIComposerInput;
 
-export const PromptSuggestions = defineComponent({
-  name: 'AicPromptSuggestions',
+export const AIComposerSuggestions = defineComponent({
+  name: 'AicAIComposerSuggestions',
   props: {
     renderItem: {
       type: Function as PropType<(item: SuggestionItem, active: boolean) => VNode>,
@@ -217,8 +231,8 @@ export const PromptSuggestions = defineComponent({
     placement: { type: String as PropType<'above' | 'below'>, default: 'above' },
   },
   setup(props, { slots }) {
-    const editor = usePromptEditorFromContext();
-    const state = usePromptState(editor);
+    const editor = useAIComposerFromContext();
+    const state = useAIComposerState(editor);
     const list = ref<HTMLElement | null>(null);
     let anchor: CaretAnchor | null = null;
 
@@ -271,11 +285,11 @@ export const PromptSuggestions = defineComponent({
   },
 });
 
-export const PromptAttachments = defineComponent({
-  name: 'AicPromptAttachments',
+export const AIComposerAttachments = defineComponent({
+  name: 'AicAIComposerAttachments',
   setup() {
-    const editor = usePromptEditorFromContext();
-    const state = usePromptState(editor);
+    const editor = useAIComposerFromContext();
+    const state = useAIComposerState(editor);
     return () => {
       const attachments = state.value.attachments;
       if (attachments.length === 0) return null;
@@ -293,7 +307,7 @@ export const PromptAttachments = defineComponent({
                 ariaLabel: `Remove ${attachment.name}`,
                 onClick: () => editor.removeNode(attachment.key),
               },
-              '×',
+              hCloseIcon(12),
             ),
           ]),
         ),
@@ -301,20 +315,20 @@ export const PromptAttachments = defineComponent({
     };
   },
 });
-const PromptAttachmentsVue = PromptAttachments;
+const AIComposerAttachmentsVue = AIComposerAttachments;
 
-export const PromptToolbar = defineComponent({
-  name: 'AicPromptToolbar',
+export const AIComposerToolbar = defineComponent({
+  name: 'AicAIComposerToolbar',
   props: {
-    submitLabel: { type: String, default: '↑' },
+    submitLabel: { type: String, default: undefined },
     actions: {
       type: Array as PropType<Array<'submit' | 'undo' | 'redo'>>,
       default: () => ['submit'],
     },
   },
   setup(props, { slots }) {
-    const editor = usePromptEditorFromContext();
-    const state = usePromptState(editor);
+    const editor = useAIComposerFromContext();
+    const state = useAIComposerState(editor);
     return () => {
       const current = state.value;
       if (slots.default) {
@@ -334,7 +348,7 @@ export const PromptToolbar = defineComponent({
               disabled: !canSubmit || current.submitting,
               onClick: () => void editor.executeCommand('submit'),
             },
-            current.submitting ? '…' : props.submitLabel,
+            current.submitting ? h('span', { class: 'aic-spinner', ariaHidden: 'true' }) : hSendIcon(),
           );
         }
         const enabled = action === 'undo' ? current.canUndo : current.canRedo;
@@ -348,37 +362,35 @@ export const PromptToolbar = defineComponent({
             disabled: !enabled,
             onClick: () => void editor.executeCommand(action),
           },
-          action === 'undo' ? 'Undo' : 'Redo',
+          action === 'undo' ? hUndoIcon() : hRedoIcon(),
         );
       });
       return h('div', { class: 'aic-toolbar', 'data-aic-slot': 'toolbar' }, buttons);
     };
   },
 });
-const PromptToolbarVue = PromptToolbar;
+const AIComposerToolbarVue = AIComposerToolbar;
 
-export const PromptHeader = defineComponent({
-  name: 'AicPromptHeader',
+export const AIComposerHeader = defineComponent({
+  name: 'AicAIComposerHeader',
   setup(_, { slots }) {
     return () => h('div', { class: 'aic-header', 'data-aic-slot': 'header' }, slots.default?.() ?? []);
   },
 });
 
-export const PromptFooter = defineComponent({
-  name: 'AicPromptFooter',
+export const AIComposerFooter = defineComponent({
+  name: 'AicAIComposerFooter',
   setup(_, { slots }) {
     return () => h('div', { class: 'aic-footer', 'data-aic-slot': 'footer' }, slots.default?.() ?? []);
   },
 });
 
 /** Convenience: prebuilt hook returning suggestion state. */
-export function usePromptSuggestions(editor: PromptEditorType) {
-  const state = usePromptState(editor);
+export function useAIComposerSuggestions(editor: AIComposerType) {
+  const state = useAIComposerState(editor);
   return computed(() => ({
     items: state.value.suggestions,
     activeIndex: state.value.activeSuggestionIndex,
     open: state.value.activeTrigger !== null && state.value.suggestions.length > 0,
   }));
 }
-
-export { EditorKey as PROMPT_EDITOR_KEY };

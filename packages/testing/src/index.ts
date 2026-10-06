@@ -1,5 +1,5 @@
 export {
-  definePromptEditorContractSuite,
+  defineAIComposerContractSuite,
   contractSuiteForCore,
   type ContractSuiteHooks,
   type ContractSuiteOptions,

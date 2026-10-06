@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  createAttachmentNode,
+  createAIComposer,
   createDefaultNodeRegistry,
   createMentionNode,
-  createPromptEditor,
   createTextNode,
 } from '@ai-composer/core';
 import { createEditableSurface } from './surface';
 import { parseEditableHost, htmlToPlainText } from './parse';
-import { mountPromptEditor } from './mount';
+import { mountAIComposer } from './mount';
 
 const registry = createDefaultNodeRegistry();
 
@@ -20,7 +21,7 @@ beforeEach(() => {
 
 describe('parse + render round-trip', () => {
   it('parses text and chips back into the model', () => {
-    const editor = createPromptEditor({
+    const editor = createAIComposer({
       value: [createTextNode('hi '), createMentionNode({ id: 'u1', label: 'Ada' }), createTextNode('!')],
     });
     const host = document.createElement('div');
@@ -58,8 +59,30 @@ describe('parse + render round-trip', () => {
 });
 
 describe('editable surface', () => {
+  it('shows attachments in the attachments slot, not inline with input text', () => {
+    const editor = createAIComposer({
+      value: [createTextNode('Review this'), createAttachmentNode({
+        id: 'f1',
+        name: 'spec.pdf',
+        mimeType: 'application/pdf',
+      })],
+    });
+    const mounted = mountAIComposer(container, editor, { mode: 'chat' });
+    const inlineAttachment = mounted.input.querySelector('[data-aic-node="attachment"]');
+
+    expect(inlineAttachment?.hasAttribute('hidden')).toBe(true);
+    expect(mounted.slots.attachments.querySelectorAll('.aic-attachment-name')).toHaveLength(1);
+    expect(mounted.slots.attachments.textContent).toContain('spec.pdf');
+    expect(parseEditableHost(mounted.input, editor.nodes).nodes.map((node) => node.type)).toEqual([
+      'text',
+      'attachment',
+    ]);
+
+    mounted.destroy();
+  });
+
   it('renders the document into the host', () => {
-    const editor = createPromptEditor({ value: 'hello' });
+    const editor = createAIComposer({ value: 'hello' });
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     expect(host.textContent).toBe('hello');
@@ -67,7 +90,7 @@ describe('editable surface', () => {
   });
 
   it('syncs user DOM edits back into the model', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     container.appendChild(host);
@@ -80,7 +103,7 @@ describe('editable surface', () => {
   });
 
   it('re-renders on programmatic model changes', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     editor.insertNode(createMentionNode({ id: 'u1', label: 'Ada' }));
@@ -91,7 +114,7 @@ describe('editable surface', () => {
 
   it('Enter submits when suggestions are closed (submitKey=enter)', () => {
     const onSubmit = vi.fn();
-    const editor = createPromptEditor({ value: 'hello', submit: { onSubmit } });
+    const editor = createAIComposer({ value: 'hello', submit: { onSubmit } });
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     container.appendChild(host);
@@ -106,7 +129,7 @@ describe('editable surface', () => {
 
   it('Shift+Enter inserts a newline instead of submitting', () => {
     const onSubmit = vi.fn();
-    const editor = createPromptEditor({ value: 'hello', submit: { onSubmit } });
+    const editor = createAIComposer({ value: 'hello', submit: { onSubmit } });
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     container.appendChild(host);
@@ -121,7 +144,7 @@ describe('editable surface', () => {
   });
 
   it('undo/redo keyboard shortcuts route through history', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     container.appendChild(host);
@@ -143,7 +166,7 @@ describe('editable surface', () => {
   });
 
   it('reflects disabled/readonly state on the host', () => {
-    const editor = createPromptEditor();
+    const editor = createAIComposer();
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     expect(host.getAttribute('contenteditable')).toBe('true');
@@ -159,7 +182,7 @@ describe('editable surface', () => {
   });
 
   it('placeholder attributes are managed for CSS', () => {
-    const editor = createPromptEditor({ placeholder: 'Ask anything…' });
+    const editor = createAIComposer({ placeholder: 'Ask anything…' });
     const host = document.createElement('div');
     const surface = createEditableSurface(editor, host);
     expect(host.getAttribute('data-placeholder')).toBe('Ask anything…');
@@ -168,11 +191,11 @@ describe('editable surface', () => {
   });
 });
 
-describe('mountPromptEditor (vanilla)', () => {
+describe('mountAIComposer (vanilla)', () => {
   it('builds the chat layout and submits from the toolbar', async () => {
     const onSubmit = vi.fn();
-    const editor = createPromptEditor({ value: 'ping', mode: 'chat', submit: { onSubmit } });
-    const mounted = mountPromptEditor(container, editor);
+    const editor = createAIComposer({ value: 'ping', mode: 'chat', submit: { onSubmit } });
+    const mounted = mountAIComposer(container, editor);
 
     expect(mounted.root.getAttribute('data-aic-mode')).toBe('chat');
     expect(mounted.slots.toolbar).toBeDefined();
@@ -187,12 +210,16 @@ describe('mountPromptEditor (vanilla)', () => {
     expect(container.textContent).toBe('');
   });
 
-  it('compact hides the toolbar; modes switch live without remount', () => {
-    const editor = createPromptEditor({ mode: 'compact', value: 'draft' });
-    const mounted = mountPromptEditor(container, editor);
+  it('compact renders inline send; modes switch live without remount', () => {
+    const editor = createAIComposer({ mode: 'compact', value: 'draft' });
+    const mounted = mountAIComposer(container, editor);
 
     expect(mounted.root.getAttribute('data-aic-mode')).toBe('compact');
-    expect(mounted.slots.toolbar.hidden).toBe(true);
+    // Compact keeps one line: chips + input + send laid out by CSS.
+    expect(mounted.slots.toolbar.hidden).toBe(false);
+    expect(mounted.slots.toolbar.querySelector('[data-aic-action="submit"]')).not.toBeNull();
+    expect(mounted.slots.header.hidden).toBe(true);
+    expect(mounted.slots.footer.hidden).toBe(true);
     // Compact is multiline-capable (wraps + grows); single line stays flagged.
     expect(mounted.input.getAttribute('aria-multiline')).toBe('true');
     expect(mounted.input.hasAttribute('data-aic-multiline')).toBe(false);
@@ -208,23 +235,26 @@ describe('mountPromptEditor (vanilla)', () => {
   });
 
   it('multiline detection flags wrapped/newline content (data-aic-multiline)', () => {
-    const editor = createPromptEditor({ mode: 'compact' });
-    const mounted = mountPromptEditor(container, editor);
+    const editor = createAIComposer({ mode: 'compact' });
+    const mounted = mountAIComposer(container, editor);
 
     mounted.input.textContent = 'line one\nline two';
     mounted.input.dispatchEvent(new Event('input', { bubbles: true }));
     expect(mounted.input.hasAttribute('data-aic-multiline')).toBe(true);
+    // Mirrored onto the root — theme CSS uses plain attribute selectors.
+    expect(mounted.root.hasAttribute('data-aic-multiline')).toBe(true);
 
     editor.setValue('single line');
     expect(mounted.input.hasAttribute('data-aic-multiline')).toBe(false);
+    expect(mounted.root.hasAttribute('data-aic-multiline')).toBe(false);
     mounted.destroy();
   });
 
   it('typing through the mount updates state and events', () => {
-    const editor = createPromptEditor({ mode: 'chat' });
+    const editor = createAIComposer({ mode: 'chat' });
     const changes: string[] = [];
     editor.on('change', (event) => changes.push(event.source));
-    const mounted = mountPromptEditor(container, editor);
+    const mounted = mountAIComposer(container, editor);
 
     mounted.input.textContent = 'hello';
     mounted.input.dispatchEvent(new Event('input', { bubbles: true }));

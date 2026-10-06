@@ -12,10 +12,11 @@ import {
   type ReactNode,
 } from 'react';
 import { createEditableSurface, createSuggestionList, attachCaretAnchoredPopup } from '@ai-composer/dom';
+import { CloseIcon, RedoIcon, SendIcon, SpinnerIcon, UndoIcon } from './icons';
 import {
-  usePromptEditorContext,
-  usePromptState,
-  usePromptSuggestions,
+  useAIComposerContext,
+  useAIComposerState,
+  useAIComposerSuggestions,
 } from './hooks';
 
 function Slot({
@@ -36,15 +37,15 @@ function Slot({
   );
 }
 
-export function PromptHeader({ children }: { children?: ReactNode }): JSX.Element {
+export function AIComposerHeader({ children }: { children?: ReactNode }): JSX.Element {
   return <Slot name="header" className="aic-header">{children}</Slot>;
 }
 
-export function PromptFooter({ children }: { children?: ReactNode }): JSX.Element {
+export function AIComposerFooter({ children }: { children?: ReactNode }): JSX.Element {
   return <Slot name="footer" className="aic-footer">{children}</Slot>;
 }
 
-export function PromptBody({ children }: { children?: ReactNode }): JSX.Element {
+export function AIComposerBody({ children }: { children?: ReactNode }): JSX.Element {
   return <Slot name="body" className="aic-body">{children}</Slot>;
 }
 
@@ -52,9 +53,9 @@ export function PromptBody({ children }: { children?: ReactNode }): JSX.Element 
  * The editable input surface. Mounts the DOM layer once; React never touches
  * the inner content — the editor engine owns it (model-first rendering).
  */
-export const PromptInput = forwardRef<HTMLDivElement, { className?: string; id?: string; suggestions?: boolean }>(
-  function PromptInput({ className, id, suggestions = true }, ref) {
-    const editor = usePromptEditorContext();
+export const AIComposerInput = forwardRef<HTMLDivElement, { className?: string; id?: string; suggestions?: boolean }>(
+  function AIComposerInput({ className, id, suggestions = true }, ref) {
+    const editor = useAIComposerContext();
     const hostRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
@@ -87,13 +88,13 @@ export const PromptInput = forwardRef<HTMLDivElement, { className?: string; id?:
 );
 
 /** Attachment chips driven by editor state. */
-export function PromptAttachments({
+export function AIComposerAttachments({
   renderItem,
 }: {
-  renderItem?: (attachment: ReturnType<typeof usePromptState>['attachments'][number], remove: () => void) => ReactNode;
+  renderItem?: (attachment: ReturnType<typeof useAIComposerState>['attachments'][number], remove: () => void) => ReactNode;
 }): JSX.Element | null {
-  const editor = usePromptEditorContext();
-  const state = usePromptState(editor);
+  const editor = useAIComposerContext();
+  const state = useAIComposerState(editor);
   if (state.attachments.length === 0) return null;
   return (
     <div className="aic-attachments" data-aic-slot="attachments">
@@ -109,7 +110,7 @@ export function PromptAttachments({
               aria-label={`Remove ${attachment.name}`}
               onClick={() => editor.removeNode(attachment.key)}
             >
-              ×
+              <CloseIcon />
             </button>
           </span>
         ),
@@ -118,19 +119,19 @@ export function PromptAttachments({
   );
 }
 
-/** Custom suggestion menu (pair with `<PromptInput suggestions={false} />`). */
-export function PromptSuggestions({
+/** Custom suggestion menu (pair with `<AIComposerInput suggestions={false} />`). */
+export function AIComposerSuggestions({
   renderItem,
   className,
   placement = 'above',
 }: {
-  renderItem?: (item: ReturnType<typeof usePromptSuggestions>['items'][number], active: boolean) => ReactNode;
+  renderItem?: (item: ReturnType<typeof useAIComposerSuggestions>['items'][number], active: boolean) => ReactNode;
   className?: string;
   /** Preferred placement relative to the caret; flips to fit the viewport. */
   placement?: 'above' | 'below';
 }): JSX.Element | null {
-  const editor = usePromptEditorContext();
-  const { items, activeIndex, open, accept } = usePromptSuggestions(editor);
+  const editor = useAIComposerContext();
+  const { items, activeIndex, open, accept } = useAIComposerSuggestions(editor);
   const listRef = useRef<HTMLUListElement | null>(null);
   const listId = useMemo(() => `aic-suggestions-react-${Math.random().toString(36).slice(2, 8)}`, []);
 
@@ -183,18 +184,19 @@ export function PromptSuggestions({
 }
 
 /** Toolbar slot; renders default submit/undo/redo buttons when empty. */
-export function PromptToolbar({
+export function AIComposerToolbar({
   children,
   actions,
-  submitLabel = '↑',
+  submitLabel,
 }: {
   children?: ReactNode;
   /** Default buttons when no children: 'submit' | 'undo' | 'redo' (default ['submit']). */
   actions?: Array<'submit' | 'undo' | 'redo'>;
+  /** Replaces the default send icon with a text label. */
   submitLabel?: string;
 }): JSX.Element {
-  const editor = usePromptEditorContext();
-  const state = usePromptState(editor);
+  const editor = useAIComposerContext();
+  const state = useAIComposerState(editor);
   const buttons = actions ?? ['submit'];
   return (
     <div className="aic-toolbar" data-aic-slot="toolbar">
@@ -211,10 +213,10 @@ export function PromptToolbar({
                 data-aic-action="submit"
                 disabled={!canSubmit || state.submitting}
                 aria-disabled={!canSubmit || state.submitting}
-                aria-label="Send"
+                aria-label={submitLabel ?? 'Send'}
                 onClick={() => void editor.executeCommand('submit')}
               >
-                {state.submitting ? '…' : submitLabel}
+                {state.submitting ? <SpinnerIcon /> : submitLabel ?? <SendIcon />}
               </button>
             );
           }
@@ -229,7 +231,7 @@ export function PromptToolbar({
               aria-label={action}
               onClick={() => void editor.executeCommand(action)}
             >
-              {action === 'undo' ? '↺' : '↻'}
+              {action === 'undo' ? <UndoIcon /> : <RedoIcon />}
             </button>
           );
         })}
