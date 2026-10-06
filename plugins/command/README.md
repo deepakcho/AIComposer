@@ -1,6 +1,16 @@
-# @ai-composer/plugin-command
+# `@ai-composer/plugin-command`
 
-/slash command trigger plugin.
+Optional `/` slash-command trigger plugin for AI Composer. Register command suggestions to let
+people invoke actions such as summarizing, explaining, or transforming the current draft.
 
-See [`docs/`](../../docs/README.md) for guides and API reference.
+```sh
+npm install @ai-composer/core @ai-composer/plugin-command
+```
 
+## Documentation
+
+- [Plugin API reference](https://deepakcho.github.io/AIComposer/#api-plugins)
+- [Commands in live demos](https://deepakcho.github.io/AIComposer/#demos)
+- [Build a custom plugin](https://deepakcho.github.io/AIComposer/#api-plugins)
+
+Source: [GitHub](https://github.com/deepakcho/AIComposer)
