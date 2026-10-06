@@ -37,7 +37,9 @@ export function Hero(): JSX.Element {
       <h1>AI Composer</h1>
       <p className="hero-promise">Ship the AI Composer. Skip the plumbing.</p>
       <p className="tagline">
-        A framework-agnostic, pluggable AI input component for building rich AI experiences.
+        A customizable AI chat input and prompt editor for React, Vue, Angular, Web Components, and
+        vanilla JavaScript. Build an AI prompt box with mentions, commands, attachments, and rich
+        content.
       </p>
       <div className="hero-actions">
         <a className="btn-primary" href="#installation">
