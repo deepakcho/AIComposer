@@ -13,6 +13,7 @@ const config: StorybookConfig = {
       '@ai-composer/dom': resolve(__dirname, '../../dom/src/index.ts'),
       '@ai-composer/web-component': resolve(__dirname, '../src/index.ts'),
       '@ai-composer/plugin-mention': resolve(__dirname, '../../../plugins/mention/src/index.ts'),
+      '@ai-composer/plugin-command': resolve(__dirname, '../../../plugins/command/src/index.ts'),
     };
     return config;
   },
