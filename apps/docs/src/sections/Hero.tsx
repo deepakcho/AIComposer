@@ -46,6 +46,22 @@ export function Hero(): JSX.Element {
         <a className="btn-secondary" href="#demos">
           Explore live demos <span aria-hidden>↓</span>
         </a>
+        <a
+          className="btn-secondary"
+          href="https://github.com/deepakcho/AIComposer"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View on GitHub
+        </a>
+        <a
+          className="btn-secondary"
+          href="https://www.npmjs.com/org/ai-composer"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Browse npm packages
+        </a>
       </div>
       <div className="hero-stats" aria-label="Package highlights">
         <div className="hero-stat">
