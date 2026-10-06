@@ -1,6 +1,6 @@
 {
   "name": "@ai-composer/testing",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
@@ -14,8 +14,8 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "@ai-composer/core": "^0.1.0",
-    "@ai-composer/dom": "^0.1.0"
+    "@ai-composer/core": "^0.1.1",
+    "@ai-composer/dom": "^0.1.1"
   },
   "devDependencies": {
     "@ai-composer/core": "workspace:*",

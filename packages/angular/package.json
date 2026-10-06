@@ -1,9 +1,13 @@
 {
   "name": "@ai-composer/angular",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "license": "MIT",
   "sideEffects": false,
+  "files": [
+    "dist/index.js",
+    "dist/index.d.ts"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -14,8 +18,8 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "@ai-composer/core": "^0.1.0",
-    "@ai-composer/dom": "^0.1.0",
+    "@ai-composer/core": "^0.1.1",
+    "@ai-composer/dom": "^0.1.1",
     "@angular/core": ">=16.0.0"
   },
   "devDependencies": {

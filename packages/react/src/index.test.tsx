@@ -38,7 +38,7 @@ describe('AIComposer component', () => {
     await rendered();
     const rootEl = container.querySelector('.aic-root');
     expect(rootEl).not.toBeNull();
-    expect(rootEl?.getAttribute('data-aic-mode')).toBe('chat');
+    await vi.waitFor(() => expect(rootEl?.getAttribute('data-aic-mode')).toBe('chat'));
     const input = container.querySelector('[data-aic-input]');
     expect(input?.getAttribute('data-placeholder')).toBe('Ask anything…');
   });

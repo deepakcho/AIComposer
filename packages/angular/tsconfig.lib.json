@@ -11,6 +11,7 @@
     "**/*.test.tsx",
     "vitest.config.ts",
     "src/test-setup.ts",
+    "src/main.ts",
     "**/*.stories.ts",
     "**/*.stories.tsx"
   ]
